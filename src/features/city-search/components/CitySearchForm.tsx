@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -8,12 +9,14 @@ import {
 
 type CitySearchFormProps = {
   city: string;
+  isLoading: boolean;
   onCityChange: (city: string) => void;
   onSearch: () => void;
 };
 
 export function CitySearchForm({
   city,
+  isLoading,
   onCityChange,
   onSearch,
 }: CitySearchFormProps) {
@@ -31,12 +34,20 @@ export function CitySearchForm({
       />
 
       <Pressable
-        style={styles.button}
+        style={[
+          styles.button,
+          isLoading && styles.buttonDisabled,
+        ]}
         onPress={onSearch}
+        disabled={isLoading}
       >
-        <Text style={styles.buttonText}>
-          Wetter suchen
-        </Text>
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>
+            Wetter suchen
+          </Text>
+        )}
       </Pressable>
     </View>
   );
@@ -62,6 +73,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#222',
     alignItems: 'center',
+  },
+
+  buttonDisabled: {
+    opacity: 0.6,
   },
 
   buttonText: {

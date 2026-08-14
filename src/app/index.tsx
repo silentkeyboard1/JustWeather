@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -25,20 +26,63 @@ export default function HomeScreen() {
   const [weather, setWeather] =
     useState<CurrentWeather | null>(null);
 
+  const [isSearching, setIsSearching] =
+    useState(false);
+
+  const [
+    isLoadingWeather,
+    setIsLoadingWeather,
+  ] = useState(false);
+
+  const [searchError, setSearchError] =
+    useState<string | null>(null);
+
+  const [weatherError, setWeatherError] =
+    useState<string | null>(null);
+
   async function handleSearch() {
+    const trimmedCity = city.trim();
+
+    if (!trimmedCity) {
+      setSearchError(
+        'Bitte gib eine Stadt ein.'
+      );
+
+      return;
+    }
+
+    setIsSearching(true);
+
+    setSearchError(null);
+    setWeatherError(null);
+
+    setSelectedCity(null);
+    setWeather(null);
+
     try {
       const foundCities =
-        await searchCities(city);
+        await searchCities(trimmedCity);
 
       setCities(foundCities);
 
-      setSelectedCity(null);
-      setWeather(null);
+      if (foundCities.length === 0) {
+        setSearchError(
+          'Keine passende Stadt gefunden.'
+        );
+      }
     } catch (error) {
       console.error(
         'Fehler bei der Stadtsuche:',
         error
       );
+
+      setCities([]);
+
+      setSearchError(
+        'Die Stadtsuche ist fehlgeschlagen. Bitte versuche es erneut.'
+      );
+    } finally {
+      setIsSearching(false);
     }
   }
 
@@ -47,8 +91,15 @@ export default function HomeScreen() {
   ) {
     setSelectedCity(selectedCity);
 
-    // Andere Suchergebnisse ausblenden
+    // Suchergebnisse ausblenden
     setCities([]);
+
+    // Eventuell altes Wetter entfernen
+    setWeather(null);
+
+    setWeatherError(null);
+
+    setIsLoadingWeather(true);
 
     try {
       const currentWeather =
@@ -60,6 +111,12 @@ export default function HomeScreen() {
         'Fehler beim Laden des Wetters:',
         error
       );
+
+      setWeatherError(
+        'Das Wetter konnte nicht geladen werden.'
+      );
+    } finally {
+      setIsLoadingWeather(false);
     }
   }
 
@@ -71,9 +128,16 @@ export default function HomeScreen() {
 
       <CitySearchForm
         city={city}
+        isLoading={isSearching}
         onCityChange={setCity}
         onSearch={handleSearch}
       />
+
+      {searchError && (
+        <Text style={styles.errorText}>
+          {searchError}
+        </Text>
+      )}
 
       <View style={styles.results}>
         {cities.map((cityResult) => (
@@ -106,8 +170,28 @@ export default function HomeScreen() {
           </Text>
 
           <Text style={styles.weatherCountry}>
+            {selectedCity.region
+              ? `${selectedCity.region}, `
+              : ''}
+
             {selectedCity.country}
           </Text>
+
+          {isLoadingWeather && (
+            <View style={styles.loadingWeather}>
+              <ActivityIndicator />
+
+              <Text>
+                Wetter wird geladen...
+              </Text>
+            </View>
+          )}
+
+          {weatherError && (
+            <Text style={styles.errorText}>
+              {weatherError}
+            </Text>
+          )}
 
           {weather && (
             <View style={styles.weatherDetails}>
@@ -192,5 +276,16 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 8,
+  },
+
+  loadingWeather: {
+    gap: 8,
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+
+  errorText: {
+    marginTop: 12,
+    color: '#b00020',
   },
 });
