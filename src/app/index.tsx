@@ -10,9 +10,9 @@ import { CitySearchForm } from '../features/city-search/components/CitySearchFor
 import { CitySearchResults } from '../features/city-search/components/CitySearchResults';
 import type { City } from '../features/city-search/model/city';
 
-import { getCurrentWeather } from '../features/weather/api/getCurrentWeather';
+import { getWeather } from '../features/weather/api/getWeather';
 import { WeatherCard } from '../features/weather/components/WeatherCard';
-import type { CurrentWeather } from '../features/weather/model/weather';
+import type { Weather } from '../features/weather/model/weather';
 
 export default function HomeScreen() {
   const [city, setCity] = useState('');
@@ -24,7 +24,7 @@ export default function HomeScreen() {
     useState<City | null>(null);
 
   const [weather, setWeather] =
-    useState<CurrentWeather | null>(null);
+    useState<Weather | null>(null);
 
   const [isSearching, setIsSearching] =
     useState(false);
@@ -98,10 +98,10 @@ export default function HomeScreen() {
     setIsLoadingWeather(true);
 
     try {
-      const currentWeather =
-        await getCurrentWeather(selectedCity);
+      const loadedWeather =
+        await getWeather(selectedCity);
 
-      setWeather(currentWeather);
+      setWeather(loadedWeather);
     } catch (error) {
       console.error(
         'Fehler beim Laden des Wetters:',
