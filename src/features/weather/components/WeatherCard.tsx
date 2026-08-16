@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +16,9 @@ type WeatherCardProps = {
   weather: Weather | null;
   isLoading: boolean;
   error: string | null;
+
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 };
 
 export function WeatherCard({
@@ -22,6 +26,8 @@ export function WeatherCard({
   weather,
   isLoading,
   error,
+  isFavorite,
+  onToggleFavorite,
 }: WeatherCardProps) {
   const { height } = useWindowDimensions();
 
@@ -37,17 +43,30 @@ export function WeatherCard({
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
     >
-      <Text style={styles.city}>
-        {city.name}
-      </Text>
+      <View style={styles.header}>
+        <View style={styles.cityInfo}>
+          <Text style={styles.city}>
+            {city.name}
+          </Text>
 
-      <Text style={styles.country}>
-        {city.region
-          ? `${city.region}, `
-          : ''}
+          <Text style={styles.country}>
+            {city.region
+              ? `${city.region}, `
+              : ''}
 
-        {city.country}
-      </Text>
+            {city.country}
+          </Text>
+        </View>
+
+        <Pressable
+          style={styles.favoriteButton}
+          onPress={onToggleFavorite}
+        >
+          <Text style={styles.favoriteIcon}>
+            {isFavorite ? '★' : '☆'}
+          </Text>
+        </Pressable>
+      </View>
 
       {isLoading && (
         <View style={styles.loading}>
@@ -225,6 +244,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
+  cityInfo: {
+    flex: 1,
+  },
+
   city: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -233,6 +261,14 @@ const styles = StyleSheet.create({
   country: {
     fontSize: 16,
     marginBottom: 20,
+  },
+
+  favoriteButton: {
+    padding: 8,
+  },
+
+  favoriteIcon: {
+    fontSize: 32,
   },
 
   currentWeather: {
