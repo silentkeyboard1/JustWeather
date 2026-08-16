@@ -1,3 +1,5 @@
+import { useRouter } from 'expo-router';
+
 import {
   ActivityIndicator,
   FlatList,
@@ -7,14 +9,32 @@ import {
   View,
 } from 'react-native';
 
+import {
+  MapPin,
+  Star,
+} from 'lucide-react-native';
+
+import type { City } from '../features/city-search/model/city';
+
 import { useFavorites } from '../features/favorites/context/FavoritesContext';
 
 export default function FavoritesScreen() {
+  const router = useRouter();
+
   const {
     favoriteCities,
     isLoadingFavorites,
     removeFavorite,
   } = useFavorites();
+
+  function handleCityPress(city: City) {
+    router.navigate({
+      pathname: '/',
+      params: {
+        cityId: city.id,
+      },
+    });
+  }
 
   if (isLoadingFavorites) {
     return (
@@ -42,6 +62,11 @@ export default function FavoritesScreen() {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
+            <Star
+              size={44}
+              color="#777"
+            />
+
             <Text style={styles.emptyTitle}>
               Noch keine Favoriten
             </Text>
@@ -54,31 +79,47 @@ export default function FavoritesScreen() {
         }
         renderItem={({ item: city }) => (
           <View style={styles.favoriteItem}>
-            <View style={styles.cityInfo}>
-              <Text style={styles.cityName}>
-                {city.name}
-              </Text>
+            <Pressable
+              style={styles.cityButton}
+              onPress={() =>
+                handleCityPress(city)
+              }
+            >
+              <View style={styles.cityHeader}>
+                <MapPin
+                  size={20}
+                  color="#555"
+                />
 
-              <Text style={styles.cityLocation}>
-                {city.region
-                  ? `${city.region}, `
-                  : ''}
+                <View style={styles.cityInfo}>
+                  <Text style={styles.cityName}>
+                    {city.name}
+                  </Text>
 
-                {city.country}
-              </Text>
-            </View>
+                  <Text
+                    style={styles.cityLocation}
+                  >
+                    {city.region
+                      ? `${city.region}, `
+                      : ''}
+                    {city.country}
+                  </Text>
+                </View>
+              </View>
+            </Pressable>
 
             <Pressable
               style={styles.removeButton}
               onPress={() =>
                 void removeFavorite(city.id)
               }
+              hitSlop={8}
             >
-              <Text
-                style={styles.removeButtonText}
-              >
-                ★
-              </Text>
+              <Star
+                size={27}
+                color="#222"
+                fill="#222"
+              />
             </Pressable>
           </View>
         )}
@@ -106,10 +147,20 @@ const styles = StyleSheet.create({
   favoriteItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 12,
+  },
+
+  cityButton: {
+    flex: 1,
+    padding: 16,
+  },
+
+  cityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
 
   cityInfo: {
@@ -127,16 +178,13 @@ const styles = StyleSheet.create({
   },
 
   removeButton: {
-    padding: 8,
-  },
-
-  removeButtonText: {
-    fontSize: 28,
+    padding: 16,
   },
 
   empty: {
     alignItems: 'center',
     paddingTop: 80,
+    gap: 8,
   },
 
   emptyTitle: {
@@ -145,7 +193,6 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
-    marginTop: 8,
     textAlign: 'center',
     color: '#666',
   },

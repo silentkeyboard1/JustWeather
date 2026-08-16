@@ -1,4 +1,13 @@
-import { useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  router,
+  useLocalSearchParams,
+} from 'expo-router';
 
 import {
   StyleSheet,
@@ -23,6 +32,11 @@ import { WeatherCard } from '../features/weather/components/WeatherCard';
 import type { Weather } from '../features/weather/model/weather';
 
 export default function HomeScreen() {
+  const { cityId } =
+    useLocalSearchParams<{
+      cityId?: string;
+    }>();
+
   const [city, setCity] = useState('');
 
   const [cities, setCities] =
@@ -49,9 +63,69 @@ export default function HomeScreen() {
     useState<string | null>(null);
 
   const {
+    favoriteCities,
     isFavorite,
     toggleFavorite,
   } = useFavorites();
+
+  const loadWeatherForCity = useCallback(
+    async (selectedCity: City) => {
+      setSelectedCity(selectedCity);
+
+      setCities([]);
+      setWeather(null);
+      setWeatherError(null);
+
+      setIsLoadingWeather(true);
+
+      try {
+        const loadedWeather =
+          await getWeather(selectedCity);
+
+        setWeather(loadedWeather);
+      } catch (error) {
+        console.error(
+          'Fehler beim Laden des Wetters:',
+          error
+        );
+
+        setWeatherError(
+          'Das Wetter konnte nicht geladen werden.'
+        );
+      } finally {
+        setIsLoadingWeather(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!cityId) {
+      return;
+    }
+
+    const favoriteCity =
+      favoriteCities.find(
+        (city) => city.id === cityId
+      );
+
+    if (!favoriteCity) {
+      return;
+    }
+
+    void loadWeatherForCity(favoriteCity);
+
+    // Parameter danach wieder zurücksetzen.
+    // Sonst würde die Stadt bei späteren
+    // State-Änderungen erneut geladen.
+    router.setParams({
+      cityId: '',
+    });
+  }, [
+    cityId,
+    favoriteCities,
+    loadWeatherForCity,
+  ]);
 
   async function handleSearch() {
     const trimmedCity = city.trim();
@@ -99,34 +173,12 @@ export default function HomeScreen() {
     }
   }
 
-  async function handleCitySelect(
+  function handleCitySelect(
     selectedCity: City
   ) {
-    setSelectedCity(selectedCity);
-
-    setCities([]);
-    setWeather(null);
-    setWeatherError(null);
-
-    setIsLoadingWeather(true);
-
-    try {
-      const loadedWeather =
-        await getWeather(selectedCity);
-
-      setWeather(loadedWeather);
-    } catch (error) {
-      console.error(
-        'Fehler beim Laden des Wetters:',
-        error
-      );
-
-      setWeatherError(
-        'Das Wetter konnte nicht geladen werden.'
-      );
-    } finally {
-      setIsLoadingWeather(false);
-    }
+    void loadWeatherForCity(
+      selectedCity
+    );
   }
 
   function handleToggleFavorite() {

@@ -5,7 +5,8 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
+} from "react-native";
+import { Search } from "lucide-react-native";
 
 type CitySearchFormProps = {
   city: string;
@@ -22,31 +23,28 @@ export function CitySearchForm({
 }: CitySearchFormProps) {
   return (
     <View>
-      <Text style={styles.subtitle}>
-        Suche nach einer Stadt
-      </Text>
+      <Text style={styles.subtitle}>Suche nach einer Stadt</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="z.B. Berlin"
+        placeholder='z.B. Berlin'
         value={city}
         onChangeText={onCityChange}
       />
 
       <Pressable
-        style={[
-          styles.button,
-          isLoading && styles.buttonDisabled,
-        ]}
+        style={[styles.button, isLoading && styles.buttonDisabled]}
         onPress={onSearch}
         disabled={isLoading}
       >
         {isLoading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color='#fff' />
         ) : (
-          <Text style={styles.buttonText}>
-            Wetter suchen
-          </Text>
+          <View style={styles.buttonContent}>
+            <Search size={18} color='#fff' />
+
+            <Text style={styles.buttonText}>Wetter suchen</Text>
+          </View>
         )}
       </Pressable>
     </View>
@@ -61,7 +59,7 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderColor: '#999',
+    borderColor: "#999",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -71,8 +69,8 @@ const styles = StyleSheet.create({
   button: {
     padding: 14,
     borderRadius: 8,
-    backgroundColor: '#222',
-    alignItems: 'center',
+    backgroundColor: "#222",
+    alignItems: "center",
   },
 
   buttonDisabled: {
@@ -80,7 +78,12 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
 });

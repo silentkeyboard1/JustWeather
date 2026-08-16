@@ -8,6 +8,16 @@ import {
   View,
 } from 'react-native';
 
+import {
+  CalendarDays,
+  CloudRain,
+  Clock,
+  Droplets,
+  Star,
+  Thermometer,
+  Wind,
+} from 'lucide-react-native';
+
 import type { City } from '../../city-search/model/city';
 import type { Weather } from '../model/weather';
 
@@ -16,7 +26,6 @@ type WeatherCardProps = {
   weather: Weather | null;
   isLoading: boolean;
   error: string | null;
-
   isFavorite: boolean;
   onToggleFavorite: () => void;
 };
@@ -53,7 +62,6 @@ export function WeatherCard({
             {city.region
               ? `${city.region}, `
               : ''}
-
             {city.country}
           </Text>
         </View>
@@ -61,10 +69,17 @@ export function WeatherCard({
         <Pressable
           style={styles.favoriteButton}
           onPress={onToggleFavorite}
+          hitSlop={8}
         >
-          <Text style={styles.favoriteIcon}>
-            {isFavorite ? '★' : '☆'}
-          </Text>
+          <Star
+            size={30}
+            color="#222"
+            fill={
+              isFavorite
+                ? '#222'
+                : 'transparent'
+            }
+          />
         </Pressable>
       </View>
 
@@ -94,33 +109,65 @@ export function WeatherCard({
               °C
             </Text>
 
-            <Text>
-              Gefühlt:{' '}
-              {Math.round(
-                weather.current.apparentTemperature
-              )}{' '}
-              °C
-            </Text>
+            <View style={styles.weatherInfoRow}>
+              <Thermometer
+                size={18}
+                color="#555"
+              />
 
-            <Text>
-              Luftfeuchtigkeit:{' '}
-              {weather.current.humidity} %
-            </Text>
+              <Text>
+                Gefühlt:{' '}
+                {Math.round(
+                  weather.current
+                    .apparentTemperature
+                )}{' '}
+                °C
+              </Text>
+            </View>
 
-            <Text>
-              Wind:{' '}
-              {weather.current.windSpeed} km/h
-            </Text>
+            <View style={styles.weatherInfoRow}>
+              <Droplets
+                size={18}
+                color="#555"
+              />
+
+              <Text>
+                Luftfeuchtigkeit:{' '}
+                {weather.current.humidity} %
+              </Text>
+            </View>
+
+            <View style={styles.weatherInfoRow}>
+              <Wind
+                size={18}
+                color="#555"
+              />
+
+              <Text>
+                Wind:{' '}
+                {weather.current.windSpeed}{' '}
+                km/h
+              </Text>
+            </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Stündliche Vorhersage
-            </Text>
+            <View style={styles.sectionHeader}>
+              <Clock
+                size={20}
+                color="#222"
+              />
+
+              <Text style={styles.sectionTitle}>
+                Stündliche Vorhersage
+              </Text>
+            </View>
 
             <ScrollView
               horizontal
-              showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={
+                false
+              }
               nestedScrollEnabled
             >
               <View style={styles.hourlyList}>
@@ -144,13 +191,19 @@ export function WeatherCard({
                       °
                     </Text>
 
-                    <Text style={styles.rain}>
-                      💧{' '}
-                      {
-                        hour.precipitationProbability
-                      }{' '}
-                      %
-                    </Text>
+                    <View style={styles.rainRow}>
+                      <CloudRain
+                        size={15}
+                        color="#555"
+                      />
+
+                      <Text style={styles.rain}>
+                        {
+                          hour.precipitationProbability
+                        }
+                        %
+                      </Text>
+                    </View>
                   </View>
                 ))}
               </View>
@@ -158,9 +211,16 @@ export function WeatherCard({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              7-Tage-Vorhersage
-            </Text>
+            <View style={styles.sectionHeader}>
+              <CalendarDays
+                size={20}
+                color="#222"
+              />
+
+              <Text style={styles.sectionTitle}>
+                7-Tage-Vorhersage
+              </Text>
+            </View>
 
             <View style={styles.dailyList}>
               {weather.daily.map((day) => (
@@ -172,13 +232,19 @@ export function WeatherCard({
                     {formatDate(day.date)}
                   </Text>
 
-                  <Text style={styles.dailyRain}>
-                    💧{' '}
-                    {
-                      day.precipitationProbability
-                    }{' '}
-                    %
-                  </Text>
+                  <View style={styles.dailyRain}>
+                    <CloudRain
+                      size={16}
+                      color="#555"
+                    />
+
+                    <Text>
+                      {
+                        day.precipitationProbability
+                      }
+                      %
+                    </Text>
+                  </View>
 
                   <View
                     style={
@@ -267,18 +333,20 @@ const styles = StyleSheet.create({
     padding: 8,
   },
 
-  favoriteIcon: {
-    fontSize: 32,
-  },
-
   currentWeather: {
-    gap: 8,
+    gap: 10,
   },
 
   temperature: {
     fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 8,
+  },
+
+  weatherInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 
   loading: {
@@ -295,10 +363,16 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
 
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 12,
   },
 
   hourlyList: {
@@ -325,6 +399,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  rainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
   rain: {
     fontSize: 12,
   },
@@ -348,6 +428,9 @@ const styles = StyleSheet.create({
 
   dailyRain: {
     width: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
 
   dailyTemperatures: {
