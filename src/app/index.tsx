@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+
 import {
   StyleSheet,
   Text,
@@ -6,17 +7,19 @@ import {
 } from 'react-native';
 
 import { searchCities } from '../features/city-search/api/searchCities';
+
 import { CitySearchForm } from '../features/city-search/components/CitySearchForm';
+
 import { CitySearchResults } from '../features/city-search/components/CitySearchResults';
+
 import type { City } from '../features/city-search/model/city';
 
-import {
-  getFavoriteCities,
-  saveFavoriteCities,
-} from '../features/favorites/storage/favoriteCitiesStorage';
+import { useFavorites } from '../features/favorites/context/FavoritesContext';
 
 import { getWeather } from '../features/weather/api/getWeather';
+
 import { WeatherCard } from '../features/weather/components/WeatherCard';
+
 import type { Weather } from '../features/weather/model/weather';
 
 export default function HomeScreen() {
@@ -30,9 +33,6 @@ export default function HomeScreen() {
 
   const [weather, setWeather] =
     useState<Weather | null>(null);
-
-  const [favoriteCities, setFavoriteCities] =
-    useState<City[]>([]);
 
   const [isSearching, setIsSearching] =
     useState(false);
@@ -48,23 +48,10 @@ export default function HomeScreen() {
   const [weatherError, setWeatherError] =
     useState<string | null>(null);
 
-  useEffect(() => {
-    loadFavorites();
-  }, []);
-
-  async function loadFavorites() {
-    try {
-      const storedFavorites =
-        await getFavoriteCities();
-
-      setFavoriteCities(storedFavorites);
-    } catch (error) {
-      console.error(
-        'Favoriten konnten nicht geladen werden:',
-        error
-      );
-    }
-  }
+  const {
+    isFavorite,
+    toggleFavorite,
+  } = useFavorites();
 
   async function handleSearch() {
     const trimmedCity = city.trim();
@@ -142,52 +129,17 @@ export default function HomeScreen() {
     }
   }
 
-  async function handleToggleFavorite() {
+  function handleToggleFavorite() {
     if (!selectedCity) {
       return;
     }
 
-    const isAlreadyFavorite =
-      favoriteCities.some(
-        (favoriteCity) =>
-          favoriteCity.id === selectedCity.id
-      );
-
-    let updatedFavorites: City[];
-
-    if (isAlreadyFavorite) {
-      updatedFavorites =
-        favoriteCities.filter(
-          (favoriteCity) =>
-            favoriteCity.id !== selectedCity.id
-        );
-    } else {
-      updatedFavorites = [
-        ...favoriteCities,
-        selectedCity,
-      ];
-    }
-
-    setFavoriteCities(updatedFavorites);
-
-    try {
-      await saveFavoriteCities(
-        updatedFavorites
-      );
-    } catch (error) {
-      console.error(
-        'Favoriten konnten nicht gespeichert werden:',
-        error
-      );
-    }
+    void toggleFavorite(selectedCity);
   }
 
   const isSelectedCityFavorite =
     selectedCity
-      ? favoriteCities.some(
-          (favoriteCity) =>
-            favoriteCity.id === selectedCity.id
-        )
+      ? isFavorite(selectedCity.id)
       : false;
 
   return (

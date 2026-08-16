@@ -1,14 +1,29 @@
-import { Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
+
+import { FavoritesProvider } from '../features/favorites/context/FavoritesContext';
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="index"
-        options={{
-          title: 'JustWeather',
+    <FavoritesProvider>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
         }}
-      />
-    </Stack>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Wetter',
+          }}
+        />
+
+        <Tabs.Screen
+          name="favorites"
+          options={{
+            title: 'Favoriten',
+          }}
+        />
+      </Tabs>
+    </FavoritesProvider>
   );
 }
