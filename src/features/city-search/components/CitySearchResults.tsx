@@ -7,6 +7,11 @@ import {
 
 import type { City } from '../model/city';
 
+import {
+  AppColors,
+  useAppTheme,
+} from '../../../shared/theme/theme';
+
 type CitySearchResultsProps = {
   cities: City[];
   onCitySelect: (city: City) => void;
@@ -16,19 +21,37 @@ export function CitySearchResults({
   cities,
   onCitySelect,
 }: CitySearchResultsProps) {
+  const { colors } = useAppTheme();
+
+  const styles =
+    createStyles(colors);
+
   return (
     <View style={styles.results}>
       {cities.map((city) => (
         <Pressable
           key={city.id}
-          style={styles.resultItem}
-          onPress={() => onCitySelect(city)}
+          style={({ pressed }) => [
+            styles.resultItem,
+
+            pressed &&
+              styles.resultItemPressed,
+          ]}
+          onPress={() =>
+            onCitySelect(city)
+          }
         >
-          <Text style={styles.resultName}>
+          <Text
+            style={styles.resultName}
+          >
             {city.name}
           </Text>
 
-          <Text>
+          <Text
+            style={
+              styles.resultLocation
+            }
+          >
             {city.region
               ? `${city.region}, `
               : ''}
@@ -41,21 +64,46 @@ export function CitySearchResults({
   );
 }
 
-const styles = StyleSheet.create({
-  results: {
-    marginTop: 24,
-    gap: 12,
-  },
+function createStyles(
+  colors: AppColors
+) {
+  return StyleSheet.create({
+    results: {
+      marginTop: 24,
+      gap: 12,
+    },
 
-  resultItem: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-  },
+    resultItem: {
+      padding: 16,
 
-  resultName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
+      borderWidth: 1,
+
+      borderColor:
+        colors.border,
+
+      backgroundColor:
+        colors.surface,
+
+      borderRadius: 10,
+    },
+
+    resultItemPressed: {
+      backgroundColor:
+        colors.surfaceSecondary,
+    },
+
+    resultName: {
+      fontSize: 18,
+
+      fontWeight: 'bold',
+
+      color: colors.text,
+    },
+
+    resultLocation: {
+      marginTop: 4,
+
+      color: colors.textMuted,
+    },
+  });
+}

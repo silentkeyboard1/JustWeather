@@ -1,4 +1,6 @@
-import { useRouter } from 'expo-router';
+import {
+  useRouter,
+} from 'expo-router';
 
 import {
   ActivityIndicator,
@@ -18,8 +20,20 @@ import type { City } from '../features/city-search/model/city';
 
 import { useFavorites } from '../features/favorites/context/FavoritesContext';
 
+import {
+  AppColors,
+  useAppTheme,
+} from '../shared/theme/theme';
+
 export default function FavoritesScreen() {
-  const router = useRouter();
+  const router =
+    useRouter();
+
+  const { colors } =
+    useAppTheme();
+
+  const styles =
+    createStyles(colors);
 
   const {
     favoriteCities,
@@ -27,9 +41,12 @@ export default function FavoritesScreen() {
     removeFavorite,
   } = useFavorites();
 
-  function handleCityPress(city: City) {
+  function handleCityPress(
+    city: City
+  ) {
     router.navigate({
       pathname: '/',
+
       params: {
         cityId: city.id,
       },
@@ -39,9 +56,13 @@ export default function FavoritesScreen() {
   if (isLoadingFavorites) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator
+          color={colors.primary}
+        />
 
-        <Text>
+        <Text
+          style={styles.loadingText}
+        >
           Favoriten werden geladen...
         </Text>
       </View>
@@ -56,7 +77,9 @@ export default function FavoritesScreen() {
 
       <FlatList
         data={favoriteCities}
-        keyExtractor={(city) => city.id}
+        keyExtractor={
+          (city) => city.id
+        }
         contentContainerStyle={
           styles.listContent
         }
@@ -64,44 +87,81 @@ export default function FavoritesScreen() {
           <View style={styles.empty}>
             <Star
               size={44}
-              color="#777"
+              color={
+                colors.textMuted
+              }
             />
 
-            <Text style={styles.emptyTitle}>
+            <Text
+              style={
+                styles.emptyTitle
+              }
+            >
               Noch keine Favoriten
             </Text>
 
-            <Text style={styles.emptyText}>
-              Suche im Wetter-Tab nach einer
-              Stadt und tippe auf den Stern.
+            <Text
+              style={
+                styles.emptyText
+              }
+            >
+              Suche im Wetter-Tab
+              nach einer Stadt und
+              tippe auf den Stern.
             </Text>
           </View>
         }
-        renderItem={({ item: city }) => (
-          <View style={styles.favoriteItem}>
+        renderItem={({
+          item: city,
+        }) => (
+          <View
+            style={
+              styles.favoriteItem
+            }
+          >
             <Pressable
-              style={styles.cityButton}
+              style={({ pressed }) => [
+                styles.cityButton,
+
+                pressed &&
+                  styles.cityButtonPressed,
+              ]}
               onPress={() =>
                 handleCityPress(city)
               }
             >
-              <View style={styles.cityHeader}>
+              <View
+                style={
+                  styles.cityHeader
+                }
+              >
                 <MapPin
                   size={20}
-                  color="#555"
+                  color={colors.icon}
                 />
 
-                <View style={styles.cityInfo}>
-                  <Text style={styles.cityName}>
+                <View
+                  style={
+                    styles.cityInfo
+                  }
+                >
+                  <Text
+                    style={
+                      styles.cityName
+                    }
+                  >
                     {city.name}
                   </Text>
 
                   <Text
-                    style={styles.cityLocation}
+                    style={
+                      styles.cityLocation
+                    }
                   >
                     {city.region
                       ? `${city.region}, `
                       : ''}
+
                     {city.country}
                   </Text>
                 </View>
@@ -109,16 +169,24 @@ export default function FavoritesScreen() {
             </Pressable>
 
             <Pressable
-              style={styles.removeButton}
+              style={
+                styles.removeButton
+              }
               onPress={() =>
-                void removeFavorite(city.id)
+                void removeFavorite(
+                  city.id
+                )
               }
               hitSlop={8}
             >
               <Star
                 size={27}
-                color="#222"
-                fill="#222"
+                color={
+                  colors.favorite
+                }
+                fill={
+                  colors.favorite
+                }
               />
             </Pressable>
           </View>
@@ -128,79 +196,129 @@ export default function FavoritesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
+function createStyles(
+  colors: AppColors
+) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
 
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 24,
-  },
+      padding: 24,
 
-  listContent: {
-    gap: 12,
-  },
+      backgroundColor:
+        colors.background,
+    },
 
-  favoriteItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-  },
+    title: {
+      fontSize: 32,
 
-  cityButton: {
-    flex: 1,
-    padding: 16,
-  },
+      fontWeight: 'bold',
 
-  cityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
+      marginBottom: 24,
 
-  cityInfo: {
-    flex: 1,
-  },
+      color: colors.text,
+    },
 
-  cityName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+    listContent: {
+      gap: 12,
+    },
 
-  cityLocation: {
-    marginTop: 4,
-    color: '#666',
-  },
+    favoriteItem: {
+      flexDirection: 'row',
 
-  removeButton: {
-    padding: 16,
-  },
+      alignItems: 'center',
 
-  empty: {
-    alignItems: 'center',
-    paddingTop: 80,
-    gap: 8,
-  },
+      borderWidth: 1,
 
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
+      borderColor:
+        colors.border,
 
-  emptyText: {
-    textAlign: 'center',
-    color: '#666',
-  },
+      backgroundColor:
+        colors.surface,
 
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-});
+      borderRadius: 12,
+
+      overflow: 'hidden',
+    },
+
+    cityButton: {
+      flex: 1,
+
+      padding: 16,
+    },
+
+    cityButtonPressed: {
+      backgroundColor:
+        colors.surfaceSecondary,
+    },
+
+    cityHeader: {
+      flexDirection: 'row',
+
+      alignItems: 'center',
+
+      gap: 12,
+    },
+
+    cityInfo: {
+      flex: 1,
+    },
+
+    cityName: {
+      fontSize: 18,
+
+      fontWeight: 'bold',
+
+      color: colors.text,
+    },
+
+    cityLocation: {
+      marginTop: 4,
+
+      color: colors.textMuted,
+    },
+
+    removeButton: {
+      padding: 16,
+    },
+
+    empty: {
+      alignItems: 'center',
+
+      paddingTop: 80,
+
+      gap: 8,
+    },
+
+    emptyTitle: {
+      fontSize: 20,
+
+      fontWeight: 'bold',
+
+      color: colors.text,
+    },
+
+    emptyText: {
+      textAlign: 'center',
+
+      color: colors.textMuted,
+    },
+
+    center: {
+      flex: 1,
+
+      alignItems: 'center',
+
+      justifyContent: 'center',
+
+      gap: 12,
+
+      backgroundColor:
+        colors.background,
+    },
+
+    loadingText: {
+      color: colors.textMuted,
+    },
+  });
+}

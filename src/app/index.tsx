@@ -31,36 +31,64 @@ import { WeatherCard } from '../features/weather/components/WeatherCard';
 
 import type { Weather } from '../features/weather/model/weather';
 
+import {
+  AppColors,
+  useAppTheme,
+} from '../shared/theme/theme';
+
 export default function HomeScreen() {
+  const { colors } =
+    useAppTheme();
+
+  const styles =
+    createStyles(colors);
+
   const { cityId } =
     useLocalSearchParams<{
       cityId?: string;
     }>();
 
-  const [city, setCity] = useState('');
+  const [city, setCity] =
+    useState('');
 
   const [cities, setCities] =
     useState<City[]>([]);
 
-  const [selectedCity, setSelectedCity] =
-    useState<City | null>(null);
+  const [
+    selectedCity,
+    setSelectedCity,
+  ] = useState<City | null>(
+    null
+  );
 
   const [weather, setWeather] =
-    useState<Weather | null>(null);
+    useState<Weather | null>(
+      null
+    );
 
-  const [isSearching, setIsSearching] =
-    useState(false);
+  const [
+    isSearching,
+    setIsSearching,
+  ] = useState(false);
 
   const [
     isLoadingWeather,
     setIsLoadingWeather,
   ] = useState(false);
 
-  const [searchError, setSearchError] =
-    useState<string | null>(null);
+  const [
+    searchError,
+    setSearchError,
+  ] = useState<
+    string | null
+  >(null);
 
-  const [weatherError, setWeatherError] =
-    useState<string | null>(null);
+  const [
+    weatherError,
+    setWeatherError,
+  ] = useState<
+    string | null
+  >(null);
 
   const {
     favoriteCities,
@@ -68,36 +96,51 @@ export default function HomeScreen() {
     toggleFavorite,
   } = useFavorites();
 
-  const loadWeatherForCity = useCallback(
-    async (selectedCity: City) => {
-      setSelectedCity(selectedCity);
-
-      setCities([]);
-      setWeather(null);
-      setWeatherError(null);
-
-      setIsLoadingWeather(true);
-
-      try {
-        const loadedWeather =
-          await getWeather(selectedCity);
-
-        setWeather(loadedWeather);
-      } catch (error) {
-        console.error(
-          'Fehler beim Laden des Wetters:',
-          error
+  const loadWeatherForCity =
+    useCallback(
+      async (
+        selectedCity: City
+      ) => {
+        setSelectedCity(
+          selectedCity
         );
 
-        setWeatherError(
-          'Das Wetter konnte nicht geladen werden.'
+        setCities([]);
+
+        setWeather(null);
+
+        setWeatherError(null);
+
+        setIsLoadingWeather(
+          true
         );
-      } finally {
-        setIsLoadingWeather(false);
-      }
-    },
-    []
-  );
+
+        try {
+          const loadedWeather =
+            await getWeather(
+              selectedCity
+            );
+
+          setWeather(
+            loadedWeather
+          );
+        } catch (error) {
+          console.error(
+            'Fehler beim Laden des Wetters:',
+            error
+          );
+
+          setWeatherError(
+            'Das Wetter konnte nicht geladen werden.'
+          );
+        } finally {
+          setIsLoadingWeather(
+            false
+          );
+        }
+      },
+      []
+    );
 
   useEffect(() => {
     if (!cityId) {
@@ -106,18 +149,18 @@ export default function HomeScreen() {
 
     const favoriteCity =
       favoriteCities.find(
-        (city) => city.id === cityId
+        (city) =>
+          city.id === cityId
       );
 
     if (!favoriteCity) {
       return;
     }
 
-    void loadWeatherForCity(favoriteCity);
+    void loadWeatherForCity(
+      favoriteCity
+    );
 
-    // Parameter danach wieder zurücksetzen.
-    // Sonst würde die Stadt bei späteren
-    // State-Änderungen erneut geladen.
     router.setParams({
       cityId: '',
     });
@@ -128,7 +171,8 @@ export default function HomeScreen() {
   ]);
 
   async function handleSearch() {
-    const trimmedCity = city.trim();
+    const trimmedCity =
+      city.trim();
 
     if (!trimmedCity) {
       setSearchError(
@@ -141,18 +185,26 @@ export default function HomeScreen() {
     setIsSearching(true);
 
     setSearchError(null);
+
     setWeatherError(null);
 
     setSelectedCity(null);
+
     setWeather(null);
 
     try {
       const foundCities =
-        await searchCities(trimmedCity);
+        await searchCities(
+          trimmedCity
+        );
 
-      setCities(foundCities);
+      setCities(
+        foundCities
+      );
 
-      if (foundCities.length === 0) {
+      if (
+        foundCities.length === 0
+      ) {
         setSearchError(
           'Keine passende Stadt gefunden.'
         );
@@ -186,12 +238,16 @@ export default function HomeScreen() {
       return;
     }
 
-    void toggleFavorite(selectedCity);
+    void toggleFavorite(
+      selectedCity
+    );
   }
 
   const isSelectedCityFavorite =
     selectedCity
-      ? isFavorite(selectedCity.id)
+      ? isFavorite(
+          selectedCity.id
+        )
       : false;
 
   return (
@@ -208,21 +264,29 @@ export default function HomeScreen() {
       />
 
       {searchError && (
-        <Text style={styles.errorText}>
+        <Text
+          style={
+            styles.errorText
+          }
+        >
           {searchError}
         </Text>
       )}
 
       <CitySearchResults
         cities={cities}
-        onCitySelect={handleCitySelect}
+        onCitySelect={
+          handleCitySelect
+        }
       />
 
       {selectedCity && (
         <WeatherCard
           city={selectedCity}
           weather={weather}
-          isLoading={isLoadingWeather}
+          isLoading={
+            isLoadingWeather
+          }
           error={weatherError}
           isFavorite={
             isSelectedCityFavorite
@@ -236,21 +300,36 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-  },
+function createStyles(
+  colors: AppColors
+) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
 
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
+      padding: 24,
 
-  errorText: {
-    marginTop: 12,
-    color: '#b00020',
-  },
-});
+      justifyContent:
+        'center',
+
+      backgroundColor:
+        colors.background,
+    },
+
+    title: {
+      fontSize: 32,
+
+      fontWeight: 'bold',
+
+      marginBottom: 8,
+
+      color: colors.text,
+    },
+
+    errorText: {
+      marginTop: 12,
+
+      color: colors.error,
+    },
+  });
+}
