@@ -1,94 +1,53 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
+  useRef,
   useState,
 } from 'react';
 
-import {
-  router,
-  useLocalSearchParams,
-} from 'expo-router';
+import { router } from 'expo-router';
 
 import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
-import { searchCities } from '../features/city-search/api/searchCities';
-
-import { CitySearchForm } from '../features/city-search/components/CitySearchForm';
-
-import { CitySearchResults } from '../features/city-search/components/CitySearchResults';
+import {
+  LocateFixed,
+  RefreshCw,
+  Search,
+} from 'lucide-react-native';
 
 import type { City } from '../features/city-search/model/city';
 
 import { useFavorites } from '../features/favorites/context/FavoritesContext';
 
-import { getWeather } from '../features/weather/api/getWeather';
+import { getCurrentCity } from '../features/location/api/getCurrentCity';
 
-import { WeatherCard } from '../features/weather/components/WeatherCard';
+import { WeatherPage } from '../features/weather/components/WeatherPage';
 
-import type { Weather } from '../features/weather/model/weather';
+import type { AppColors } from '../shared/theme/theme';
 
-import {
-  AppColors,
-  useAppTheme,
-} from '../shared/theme/theme';
+import { useAppTheme } from '../shared/theme/theme';
 
 export default function HomeScreen() {
+  const { width } =
+    useWindowDimensions();
+
   const { colors } =
     useAppTheme();
 
   const styles =
     createStyles(colors);
 
-  const { cityId } =
-    useLocalSearchParams<{
-      cityId?: string;
-    }>();
-
-  const [city, setCity] =
-    useState('');
-
-  const [cities, setCities] =
-    useState<City[]>([]);
-
-  const [
-    selectedCity,
-    setSelectedCity,
-  ] = useState<City | null>(
-    null
-  );
-
-  const [weather, setWeather] =
-    useState<Weather | null>(
-      null
-    );
-
-  const [
-    isSearching,
-    setIsSearching,
-  ] = useState(false);
-
-  const [
-    isLoadingWeather,
-    setIsLoadingWeather,
-  ] = useState(false);
-
-  const [
-    searchError,
-    setSearchError,
-  ] = useState<
-    string | null
-  >(null);
-
-  const [
-    weatherError,
-    setWeatherError,
-  ] = useState<
-    string | null
-  >(null);
+  const pagerRef =
+    useRef<FlatList<City>>(null);
 
   const {
     favoriteCities,
@@ -96,206 +55,413 @@ export default function HomeScreen() {
     toggleFavorite,
   } = useFavorites();
 
-  const loadWeatherForCity =
-    useCallback(
-      async (
-        selectedCity: City
-      ) => {
-        setSelectedCity(
-          selectedCity
+  const [
+    currentCity,
+    setCurrentCity,
+  ] = useState<City | null>(
+    null
+  );
+
+  const [
+    isLoadingLocation,
+    setIsLoadingLocation,
+  ] = useState(true);
+
+  const [
+    locationError,
+    setLocationError,
+  ] = useState<string | null>(
+    null
+  );
+
+  const [
+    activeIndex,
+    setActiveIndex,
+  ] = useState(0);
+
+  /**
+   * Unsere Swipe-Seiten.
+   *
+   * 0 = aktueller Standort
+   * danach alle Favoriten
+   */
+  const weatherCities =
+    useMemo(() => {
+      if (currentCity) {
+        return [
+          currentCity,
+          ...favoriteCities,
+        ];
+      }
+
+      return favoriteCities;
+    }, [
+      currentCity,
+      favoriteCities,
+    ]);
+
+  const loadCurrentLocation =
+    useCallback(async () => {
+      setIsLoadingLocation(
+        true
+      );
+
+      setLocationError(null);
+
+      try {
+        const city =
+          await getCurrentCity();
+
+        setCurrentCity(city);
+      } catch (error) {
+        console.error(
+          'Standort konnte nicht geladen werden:',
+          error
         );
 
-        setCities([]);
-
-        setWeather(null);
-
-        setWeatherError(null);
-
-        setIsLoadingWeather(
-          true
-        );
-
-        try {
-          const loadedWeather =
-            await getWeather(
-              selectedCity
-            );
-
-          setWeather(
-            loadedWeather
+        if (
+          error instanceof Error &&
+          error.message ===
+            'LOCATION_PERMISSION_DENIED'
+        ) {
+          setLocationError(
+            'Ohne Standortberechtigung kann das Wetter für deinen aktuellen Standort nicht angezeigt werden.'
           );
-        } catch (error) {
-          console.error(
-            'Fehler beim Laden des Wetters:',
-            error
-          );
-
-          setWeatherError(
-            'Das Wetter konnte nicht geladen werden.'
-          );
-        } finally {
-          setIsLoadingWeather(
-            false
+        } else {
+          setLocationError(
+            'Dein aktueller Standort konnte nicht ermittelt werden.'
           );
         }
-      },
-      []
-    );
-
-  useEffect(() => {
-    if (!cityId) {
-      return;
-    }
-
-    const favoriteCity =
-      favoriteCities.find(
-        (city) =>
-          city.id === cityId
-      );
-
-    if (!favoriteCity) {
-      return;
-    }
-
-    void loadWeatherForCity(
-      favoriteCity
-    );
-
-    router.setParams({
-      cityId: '',
-    });
-  }, [
-    cityId,
-    favoriteCities,
-    loadWeatherForCity,
-  ]);
-
-  async function handleSearch() {
-    const trimmedCity =
-      city.trim();
-
-    if (!trimmedCity) {
-      setSearchError(
-        'Bitte gib eine Stadt ein.'
-      );
-
-      return;
-    }
-
-    setIsSearching(true);
-
-    setSearchError(null);
-
-    setWeatherError(null);
-
-    setSelectedCity(null);
-
-    setWeather(null);
-
-    try {
-      const foundCities =
-        await searchCities(
-          trimmedCity
-        );
-
-      setCities(
-        foundCities
-      );
-
-      if (
-        foundCities.length === 0
-      ) {
-        setSearchError(
-          'Keine passende Stadt gefunden.'
+      } finally {
+        setIsLoadingLocation(
+          false
         );
       }
-    } catch (error) {
-      console.error(
-        'Fehler bei der Stadtsuche:',
-        error
-      );
+    }, []);
 
-      setCities([]);
+  /**
+   * Standort beim Start laden.
+   */
+  useEffect(() => {
+    void loadCurrentLocation();
+  }, [loadCurrentLocation]);
 
-      setSearchError(
-        'Die Stadtsuche ist fehlgeschlagen. Bitte versuche es erneut.'
-      );
-    } finally {
-      setIsSearching(false);
-    }
-  }
-
-  function handleCitySelect(
-    selectedCity: City
-  ) {
-    void loadWeatherForCity(
-      selectedCity
-    );
-  }
-
-  function handleToggleFavorite() {
-    if (!selectedCity) {
+  /**
+   * Falls ein Favorit gelöscht wird und
+   * dadurch die aktuelle Seite nicht
+   * mehr existiert:
+   *
+   * zurück auf Seite 0.
+   */
+  useEffect(() => {
+    if (
+      activeIndex <
+      weatherCities.length
+    ) {
       return;
     }
 
-    void toggleFavorite(
-      selectedCity
-    );
+    setActiveIndex(0);
+
+    pagerRef.current?.scrollToIndex({
+      index: 0,
+      animated: true,
+    });
+  }, [
+    activeIndex,
+    weatherCities.length,
+  ]);
+
+  async function handleToggleFavorite(
+    city: City
+  ) {
+    if (
+      city.id ===
+      'current-location'
+    ) {
+      return;
+    }
+
+    const wasFavorite =
+      isFavorite(city.id);
+
+    await toggleFavorite(city);
+
+    /**
+     * Wird die aktuell sichtbare
+     * Favoriten-Seite gelöscht,
+     * springen wir zum Standort.
+     */
+    if (
+      wasFavorite &&
+      currentCity
+    ) {
+      setActiveIndex(0);
+
+      pagerRef.current?.scrollToIndex({
+        index: 0,
+        animated: true,
+      });
+    }
   }
 
-  const isSelectedCityFavorite =
-    selectedCity
-      ? isFavorite(
-          selectedCity.id
-        )
-      : false;
+  function handlePageChanged(
+    offsetX: number
+  ) {
+    const newIndex =
+      Math.round(
+        offsetX / width
+      );
+
+    setActiveIndex(newIndex);
+  }
+
+  function handleRetryLocation() {
+    void loadCurrentLocation();
+  }
+
+  const hasPages =
+    weatherCities.length > 0;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        JustWeather
-      </Text>
+      {/* LOCATION LOADING */}
+      {isLoadingLocation &&
+        !hasPages && (
+          <View
+            style={styles.center}
+          >
+            <ActivityIndicator
+              size="large"
+              color={
+                colors.primary
+              }
+            />
 
-      <CitySearchForm
-        city={city}
-        isLoading={isSearching}
-        onCityChange={setCity}
-        onSearch={handleSearch}
-      />
+            <Text
+              style={
+                styles.mutedText
+              }
+            >
+              Standort wird ermittelt...
+            </Text>
+          </View>
+        )}
 
-      {searchError && (
-        <Text
-          style={
-            styles.errorText
-          }
-        >
-          {searchError}
-        </Text>
-      )}
+      {/* KEIN STANDORT + KEINE FAVORITEN */}
+      {locationError &&
+        !hasPages && (
+          <View
+            style={
+              styles.errorContainer
+            }
+          >
+            <LocateFixed
+              size={42}
+              color={
+                colors.error
+              }
+            />
 
-      <CitySearchResults
-        cities={cities}
-        onCitySelect={
-          handleCitySelect
-        }
-      />
+            <Text
+              style={
+                styles.errorTitle
+              }
+            >
+              Standort nicht verfügbar
+            </Text>
 
-      {selectedCity && (
-        <WeatherCard
-          city={selectedCity}
-          weather={weather}
-          isLoading={
-            isLoadingWeather
+            <Text
+              style={
+                styles.errorText
+              }
+            >
+              {locationError}
+            </Text>
+
+            <Pressable
+              style={({
+                pressed,
+              }) => [
+                styles.retryButton,
+
+                pressed &&
+                  styles.retryButtonPressed,
+              ]}
+              onPress={
+                handleRetryLocation
+              }
+            >
+              <RefreshCw
+                size={18}
+                color={
+                  colors.primaryText
+                }
+              />
+
+              <Text
+                style={
+                  styles.retryButtonText
+                }
+              >
+                Erneut versuchen
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+      {/* STANDORT FEHLT, ABER FAVORITEN SIND DA */}
+      {locationError &&
+        hasPages && (
+          <View
+            style={
+              styles.locationWarning
+            }
+          >
+            <Text
+              style={
+                styles.locationWarningText
+              }
+            >
+              Standort aktuell nicht
+              verfügbar.
+            </Text>
+
+            <Pressable
+              onPress={
+                handleRetryLocation
+              }
+              hitSlop={8}
+            >
+              <RefreshCw
+                size={18}
+                color={
+                  colors.primary
+                }
+              />
+            </Pressable>
+          </View>
+        )}
+
+      {/* WETTER-SEITEN */}
+      {hasPages && (
+        <FlatList
+          ref={pagerRef}
+          data={weatherCities}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={
+            false
           }
-          error={weatherError}
-          isFavorite={
-            isSelectedCityFavorite
+          keyExtractor={
+            (city) => city.id
           }
-          onToggleFavorite={
-            handleToggleFavorite
-          }
+          style={styles.pager}
+          initialNumToRender={1}
+          maxToRenderPerBatch={1}
+          windowSize={3}
+          getItemLayout={(
+            _,
+            index
+          ) => ({
+            length: width,
+            offset:
+              width * index,
+            index,
+          })}
+          onMomentumScrollEnd={(
+            event
+          ) => {
+            handlePageChanged(
+              event.nativeEvent
+                .contentOffset.x
+            );
+          }}
+          renderItem={({
+            item: city,
+          }) => {
+            const isCurrentLocation =
+              city.id ===
+              'current-location';
+
+            return (
+              <View
+                style={[
+                  styles.page,
+
+                  {
+                    width,
+                  },
+                ]}
+              >
+                <WeatherPage
+                  city={city}
+                  isCurrentLocation={
+                    isCurrentLocation
+                  }
+                  isFavorite={
+                    isCurrentLocation
+                      ? false
+                      : isFavorite(
+                          city.id
+                        )
+                  }
+                  onToggleFavorite={
+                    handleToggleFavorite
+                  }
+                />
+              </View>
+            );
+          }}
         />
       )}
+
+      {/* PAGINATION DOTS */}
+      {weatherCities.length > 1 && (
+        <View
+          style={
+            styles.pagination
+          }
+          pointerEvents="none"
+        >
+          {weatherCities.map(
+            (city, index) => (
+              <View
+                key={city.id}
+                style={[
+                  styles.dot,
+
+                  index ===
+                    activeIndex &&
+                    styles.activeDot,
+                ]}
+              />
+            )
+          )}
+        </View>
+      )}
+
+      {/* FLOATING SEARCH BUTTON */}
+      <Pressable
+        style={({ pressed }) => [
+          styles.searchFab,
+
+          pressed &&
+            styles.searchFabPressed,
+        ]}
+        onPress={() =>
+          router.push('/search')
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Stadt suchen"
+      >
+        <Search
+          size={27}
+          color={
+            colors.primaryText
+          }
+        />
+      </Pressable>
     </View>
   );
 }
@@ -307,29 +473,223 @@ function createStyles(
     container: {
       flex: 1,
 
-      padding: 24,
-
-      justifyContent:
-        'center',
-
       backgroundColor:
         colors.background,
     },
 
-    title: {
-      fontSize: 32,
+    pager: {
+      flex: 1,
+    },
+
+    page: {
+      flex: 1,
+
+      paddingHorizontal: 20,
+
+      paddingTop: 24,
+
+      paddingBottom: 70,
+    },
+
+    center: {
+      flex: 1,
+
+      justifyContent:
+        'center',
+
+      alignItems: 'center',
+
+      gap: 12,
+
+      paddingHorizontal: 24,
+    },
+
+    mutedText: {
+      color: colors.textMuted,
+    },
+
+    errorContainer: {
+      flex: 1,
+
+      justifyContent:
+        'center',
+
+      alignItems: 'center',
+
+      paddingHorizontal: 24,
+
+      gap: 12,
+    },
+
+    errorTitle: {
+      fontSize: 20,
 
       fontWeight: 'bold',
-
-      marginBottom: 8,
 
       color: colors.text,
     },
 
     errorText: {
-      marginTop: 12,
+      color: colors.textMuted,
 
-      color: colors.error,
+      textAlign: 'center',
+
+      lineHeight: 21,
+    },
+
+    retryButton: {
+      flexDirection: 'row',
+
+      alignItems: 'center',
+
+      gap: 8,
+
+      marginTop: 8,
+
+      paddingHorizontal: 18,
+
+      paddingVertical: 12,
+
+      borderRadius: 10,
+
+      backgroundColor:
+        colors.primary,
+    },
+
+    retryButtonPressed: {
+      opacity: 0.75,
+    },
+
+    retryButtonText: {
+      color:
+        colors.primaryText,
+
+      fontWeight: '600',
+    },
+
+    locationWarning: {
+      position: 'absolute',
+
+      top: 18,
+
+      left: 20,
+
+      right: 20,
+
+      zIndex: 50,
+
+      elevation: 5,
+
+      flexDirection: 'row',
+
+      alignItems: 'center',
+
+      justifyContent:
+        'space-between',
+
+      paddingHorizontal: 14,
+
+      paddingVertical: 10,
+
+      borderWidth: 1,
+
+      borderColor:
+        colors.border,
+
+      borderRadius: 12,
+
+      backgroundColor:
+        colors.surface,
+    },
+
+    locationWarningText: {
+      color: colors.textMuted,
+    },
+
+    pagination: {
+      position: 'absolute',
+
+      bottom: 30,
+
+      left: 0,
+
+      right: 0,
+
+      flexDirection: 'row',
+
+      justifyContent:
+        'center',
+
+      alignItems: 'center',
+
+      gap: 7,
+
+      zIndex: 20,
+    },
+
+    dot: {
+      width: 7,
+
+      height: 7,
+
+      borderRadius: 4,
+
+      backgroundColor:
+        colors.border,
+    },
+
+    activeDot: {
+      width: 18,
+
+      backgroundColor:
+        colors.primary,
+    },
+
+    searchFab: {
+      position: 'absolute',
+
+      left: 20,
+
+      bottom: 20,
+
+      width: 60,
+
+      height: 60,
+
+      borderRadius: 30,
+
+      alignItems: 'center',
+
+      justifyContent:
+        'center',
+
+      backgroundColor:
+        colors.primary,
+
+      zIndex: 100,
+
+      elevation: 12,
+
+      shadowColor: colors.text,
+
+      shadowOffset: {
+        width: 0,
+        height: 5,
+      },
+
+      shadowOpacity: 0.2,
+
+      shadowRadius: 8,
+    },
+
+    searchFabPressed: {
+      opacity: 0.8,
+
+      transform: [
+        {
+          scale: 0.95,
+        },
+      ],
     },
   });
 }

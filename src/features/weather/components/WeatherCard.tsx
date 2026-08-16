@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -19,7 +18,6 @@ import {
 } from 'lucide-react-native';
 
 import type { City } from '../../city-search/model/city';
-
 import type { Weather } from '../model/weather';
 
 import {
@@ -32,8 +30,10 @@ type WeatherCardProps = {
   weather: Weather | null;
   isLoading: boolean;
   error: string | null;
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
+
+  showFavoriteButton?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 };
 
 export function WeatherCard({
@@ -41,11 +41,10 @@ export function WeatherCard({
   weather,
   isLoading,
   error,
-  isFavorite,
+  showFavoriteButton = true,
+  isFavorite = false,
   onToggleFavorite,
 }: WeatherCardProps) {
-  const { height } =
-    useWindowDimensions();
 
   const { colors } =
     useAppTheme();
@@ -55,20 +54,11 @@ export function WeatherCard({
 
   return (
     <ScrollView
-      style={[
-        styles.card,
-
-        {
-          maxHeight:
-            height * 0.65,
-        },
-      ]}
+      style={styles.card}
       contentContainerStyle={
         styles.cardContent
       }
-      showsVerticalScrollIndicator={
-        false
-      }
+      showsVerticalScrollIndicator={false}
       nestedScrollEnabled
     >
       <View style={styles.header}>
@@ -77,9 +67,7 @@ export function WeatherCard({
             {city.name}
           </Text>
 
-          <Text
-            style={styles.country}
-          >
+          <Text style={styles.country}>
             {city.region
               ? `${city.region}, `
               : ''}
@@ -88,53 +76,50 @@ export function WeatherCard({
           </Text>
         </View>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.favoriteButton,
+        {showFavoriteButton &&
+          onToggleFavorite && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.favoriteButton,
 
-            pressed && {
-              opacity: 0.6,
-            },
-          ]}
-          onPress={onToggleFavorite}
-          hitSlop={8}
-        >
-          <Star
-            size={30}
-            color={
-              isFavorite
-                ? colors.favorite
-                : colors.icon
-            }
-            fill={
-              isFavorite
-                ? colors.favorite
-                : 'transparent'
-            }
-          />
-        </Pressable>
+                pressed && {
+                  opacity: 0.6,
+                },
+              ]}
+              onPress={onToggleFavorite}
+              hitSlop={8}
+            >
+              <Star
+                size={30}
+                color={
+                  isFavorite
+                    ? colors.favorite
+                    : colors.icon
+                }
+                fill={
+                  isFavorite
+                    ? colors.favorite
+                    : 'transparent'
+                }
+              />
+            </Pressable>
+          )}
       </View>
 
       {isLoading && (
-        <View
-          style={styles.loading}
-        >
+        <View style={styles.loading}>
           <ActivityIndicator
             color={colors.primary}
           />
 
-          <Text
-            style={styles.mutedText}
-          >
+          <Text style={styles.mutedText}>
             Wetter wird geladen...
           </Text>
         </View>
       )}
 
       {error && (
-        <Text
-          style={styles.errorText}
-        >
+        <Text style={styles.errorText}>
           {error}
         </Text>
       )}
@@ -231,9 +216,7 @@ export function WeatherCard({
             </View>
           </View>
 
-          <View
-            style={styles.section}
-          >
+          <View style={styles.section}>
             <View
               style={
                 styles.sectionHeader
@@ -325,9 +308,7 @@ export function WeatherCard({
             </ScrollView>
           </View>
 
-          <View
-            style={styles.section}
-          >
+          <View style={styles.section}>
             <View
               style={
                 styles.sectionHeader
@@ -452,17 +433,7 @@ function createStyles(
 ) {
   return StyleSheet.create({
     card: {
-      marginTop: 24,
-
-      borderWidth: 1,
-
-      borderColor:
-        colors.border,
-
-      backgroundColor:
-        colors.surface,
-
-      borderRadius: 12,
+      flex: 1,
     },
 
     cardContent: {
@@ -504,7 +475,7 @@ function createStyles(
     },
 
     temperature: {
-      fontSize: 36,
+      fontSize: 40,
 
       fontWeight: 'bold',
 

@@ -33,6 +33,12 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "JustWeather verwendet deinen Standort, um das aktuelle Wetter für deine Umgebung anzuzeigen."
+        }
       ]
     ],
     "experiments": {
