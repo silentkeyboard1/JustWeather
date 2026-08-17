@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 
 import {
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +14,10 @@ import {
   ArrowLeft,
   Search,
 } from 'lucide-react-native';
+
+import {
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { searchCities } from '../features/city-search/api/searchCities';
 
@@ -27,9 +32,13 @@ import { useFavorites } from '../features/favorites/context/FavoritesContext';
 import { WeatherPage } from '../features/weather/components/WeatherPage';
 
 import type { AppColors } from '../shared/theme/theme';
+
 import { useAppTheme } from '../shared/theme/theme';
 
 export default function SearchScreen() {
+  const insets =
+    useSafeAreaInsets();
+
   const { colors } =
     useAppTheme();
 
@@ -41,11 +50,15 @@ export default function SearchScreen() {
     toggleFavorite,
   } = useFavorites();
 
-  const [searchTerm, setSearchTerm] =
-    useState('');
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState('');
 
-  const [cities, setCities] =
-    useState<City[]>([]);
+  const [
+    cities,
+    setCities,
+  ] = useState<City[]>([]);
 
   const [
     selectedCity,
@@ -72,7 +85,7 @@ export default function SearchScreen() {
 
     if (!trimmedSearchTerm) {
       setSearchError(
-        'Bitte gib eine Stadt ein.'
+        'Please enter a city.'
       );
 
       return;
@@ -90,25 +103,39 @@ export default function SearchScreen() {
           trimmedSearchTerm
         );
 
+      /*
+       * Put the new results into the
+       * UI immediately.
+       */
       setCities(foundCities);
+
+      /*
+       * The user has finished entering
+       * the search term, so the keyboard
+       * no longer needs to cover the
+       * results.
+       */
+      Keyboard.dismiss();
 
       if (
         foundCities.length === 0
       ) {
         setSearchError(
-          'Keine passende Stadt gefunden.'
+          'No matching cities found.'
         );
       }
     } catch (error) {
       console.error(
-        'Fehler bei der Stadtsuche:',
+        'City search failed:',
         error
       );
+
+      Keyboard.dismiss();
 
       setCities([]);
 
       setSearchError(
-        'Die Stadtsuche ist fehlgeschlagen.'
+        'City search failed. Please try again.'
       );
     } finally {
       setIsSearching(false);
@@ -118,86 +145,250 @@ export default function SearchScreen() {
   function handleCitySelect(
     city: City
   ) {
-    setSelectedCity(city);
+    /*
+     * Hide the keyboard in case it
+     * somehow still happens to be open.
+     */
+    Keyboard.dismiss();
 
-    // Trefferliste nach Auswahl verstecken.
-    setCities([]);
+    /*
+     * Selecting a city switches the
+     * entire screen into weather mode.
+     */
+    setSelectedCity(city);
 
     setSearchError(null);
   }
 
-  function handleToggleFavorite(
+  async function handleToggleFavorite(
     city: City
   ) {
-    void toggleFavorite(city);
+    await toggleFavorite(city);
   }
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+  /*
+   * ------------------------------------------------
+   * SELECTED CITY
+   * ------------------------------------------------
+   *
+   * As soon as a city is selected we
+   * stop rendering the search interface
+   * entirely.
+   *
+   * WeatherPage now owns the whole screen.
+   */
+  if (selectedCity) {
+    return (
+      <View
+        style={
+          styles.weatherScreen
+        }
+      >
+        <WeatherPage
+          city={selectedCity}
+          isCurrentLocation={
+            false
+          }
+          isFavorite={
+            isFavorite(
+              selectedCity.id
+            )
+          }
+          onToggleFavorite={
+            handleToggleFavorite
+          }
 
-        <View style={styles.headerText}>
-          <View style={styles.titleRow}>
+          /*
+           * This gives the selected city
+           * the same full-screen reactive
+           * weather background as Home.
+           */
+          useWeatherBackground
+        />
+
+        {/*
+          Floating button to return to the
+          city search without leaving the
+          Search route completely.
+        */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.backToSearchButton,
+
+            {
+              bottom:
+                insets.bottom +
+                18,
+            },
+
+            pressed &&
+              styles.buttonPressed,
+          ]}
+          onPress={() => {
+            setSelectedCity(null);
+
+            /*
+             * Clear old results so we
+             * return to a clean search
+             * screen.
+             */
+            setCities([]);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Back to city search"
+        >
+          <ArrowLeft
+            size={25}
+            strokeWidth={2.2}
+            color={
+              colors.primaryText
+            }
+          />
+        </Pressable>
+      </View>
+    );
+  }
+
+  /*
+   * ------------------------------------------------
+   * SEARCH MODE
+   * ------------------------------------------------
+   */
+  return (
+    <View
+      style={[
+        styles.container,
+
+        {
+          paddingTop:
+            insets.top + 16,
+
+          paddingBottom:
+            insets.bottom + 16,
+        },
+      ]}
+    >
+      {/* HEADER */}
+
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.backButton,
+
+            pressed &&
+              styles.buttonPressed,
+          ]}
+          onPress={() =>
+            router.back()
+          }
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+        >
+          <ArrowLeft
+            size={24}
+            color={colors.text}
+          />
+        </Pressable>
+
+        <View
+          style={
+            styles.headerText
+          }
+        >
+          <View
+            style={
+              styles.titleRow
+            }
+          >
             <Search
               size={22}
-              color={colors.primary}
+              color={
+                colors.primary
+              }
             />
 
-            <Text style={styles.title}>
-              Stadt suchen
+            <Text
+              style={
+                styles.title
+              }
+            >
+              Search city
             </Text>
           </View>
 
-          <Text style={styles.subtitle}>
-            Suche nach einem Ort und füge
-            ihn optional zu deinen
-            Favoriten hinzu.
+          <Text
+            style={
+              styles.subtitle
+            }
+          >
+            Search for a city to view its weather or add it to your favorites.
           </Text>
         </View>
       </View>
 
+      {/* SEARCH INPUT */}
+
       <CitySearchForm
         city={searchTerm}
-        isLoading={isSearching}
-        onCityChange={
-          setSearchTerm
+        isLoading={
+          isSearching
         }
-        onSearch={handleSearch}
+        onCityChange={(
+          value
+        ) => {
+          setSearchTerm(
+            value
+          );
+
+          /*
+           * Remove an old error as soon
+           * as the user starts typing
+           * again.
+           */
+          if (searchError) {
+            setSearchError(
+              null
+            );
+          }
+        }}
+        onSearch={
+          handleSearch
+        }
       />
+
+      {/* SEARCH ERROR */}
 
       {searchError && (
         <Text
-          style={styles.errorText}
+          style={
+            styles.errorText
+          }
         >
           {searchError}
         </Text>
       )}
 
-      <CitySearchResults
-        cities={cities}
-        onCitySelect={
-          handleCitySelect
-        }
-      />
+      {/* RESULTS */}
 
-      {selectedCity && (
+      {cities.length > 0 && (
         <View
           style={
-            styles.weatherContainer
+            styles.resultsContainer
           }
         >
-          <WeatherPage
-            city={selectedCity}
-            isCurrentLocation={
-              false
+          <Text
+            style={
+              styles.resultsTitle
             }
-            isFavorite={
-              isFavorite(
-                selectedCity.id
-              )
-            }
-            onToggleFavorite={
-              handleToggleFavorite
+          >
+            Results
+          </Text>
+
+          <CitySearchResults
+            cities={cities}
+            onCitySelect={
+              handleCitySelect
             }
           />
         </View>
@@ -215,7 +406,12 @@ function createStyles(
 
       paddingHorizontal: 20,
 
-      paddingTop: 28,
+      backgroundColor:
+        colors.background,
+    },
+
+    weatherScreen: {
+      flex: 1,
 
       backgroundColor:
         colors.background,
@@ -224,15 +420,33 @@ function createStyles(
     header: {
       flexDirection: 'row',
 
-      alignItems: 'flex-start',
+      alignItems:
+        'flex-start',
 
       gap: 12,
 
       marginBottom: 24,
     },
 
-    buttonPressed: {
-      opacity: 0.65,
+    backButton: {
+      width: 44,
+
+      height: 44,
+
+      borderRadius: 22,
+
+      alignItems: 'center',
+
+      justifyContent:
+        'center',
+
+      backgroundColor:
+        colors.surface,
+
+      borderWidth: 1,
+
+      borderColor:
+        colors.border,
     },
 
     headerText: {
@@ -250,15 +464,17 @@ function createStyles(
     title: {
       fontSize: 26,
 
-      fontWeight: 'bold',
+      fontWeight: '800',
 
-      color: colors.text,
+      color:
+        colors.text,
     },
 
     subtitle: {
       marginTop: 5,
 
-      color: colors.textMuted,
+      color:
+        colors.textMuted,
 
       lineHeight: 20,
     },
@@ -266,15 +482,78 @@ function createStyles(
     errorText: {
       marginTop: 12,
 
-      color: colors.error,
+      color:
+        colors.error,
+
+      fontWeight: '500',
     },
 
-    weatherContainer: {
+    resultsContainer: {
       flex: 1,
 
-      marginTop: 20,
+      marginTop: 22,
+    },
 
-      paddingBottom: 20,
+    resultsTitle: {
+      marginBottom: 10,
+
+      fontSize: 16,
+
+      fontWeight: '700',
+
+      color:
+        colors.text,
+    },
+
+    backToSearchButton: {
+      position: 'absolute',
+
+      right: 20,
+
+      width: 58,
+
+      height: 58,
+
+      borderRadius: 29,
+
+      alignItems: 'center',
+
+      justifyContent:
+        'center',
+
+      backgroundColor:
+        colors.primary,
+
+      borderWidth: 1,
+
+      borderColor:
+        colors.border,
+
+      elevation: 12,
+
+      zIndex: 100,
+
+      shadowColor:
+        colors.text,
+
+      shadowOffset: {
+        width: 0,
+        height: 5,
+      },
+
+      shadowOpacity: 0.2,
+
+      shadowRadius: 9,
+    },
+
+    buttonPressed: {
+      opacity: 0.7,
+
+      transform: [
+        {
+          scale: 0.95,
+        },
+      ],
     },
   });
 }

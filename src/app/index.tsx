@@ -698,27 +698,6 @@ function createStyles(
 
       borderColor:
         colors.border,
-
-      /*
-       * iOS shadow
-       */
-      shadowColor: colors.text,
-
-      shadowOffset: {
-        width: 0,
-        height: 5,
-      },
-
-      shadowOpacity: 0.2,
-
-      shadowRadius: 9,
-
-      /*
-       * Android shadow / stacking.
-       */
-      elevation: 12,
-
-      zIndex: 100,
     },
 
     searchFabPressed: {

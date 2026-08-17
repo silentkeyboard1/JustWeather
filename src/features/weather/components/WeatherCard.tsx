@@ -775,12 +775,6 @@ function createStyles(
       paddingBottom: 24,
     },
 
-    /*
-     * No card anymore.
-     *
-     * The city information now sits
-     * directly on the weather gradient.
-     */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -853,9 +847,6 @@ function createStyles(
       textAlign: 'center',
     },
 
-    /*
-     * Large, clean hero temperature.
-     */
     temperatureSection: {
       marginTop: 22,
       alignItems: 'center',
@@ -898,23 +889,16 @@ function createStyles(
     metricPill: {
       flex: 1,
       minHeight: 58,
-
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-
       gap: 7,
-
       paddingHorizontal: 8,
       paddingVertical: 9,
-
       borderRadius: 12,
-
       backgroundColor:
         colors.surface,
-
       borderWidth: 1,
-
       borderColor:
         colors.border,
     },
@@ -926,22 +910,16 @@ function createStyles(
     metricLabel: {
       fontSize: 10,
       lineHeight: 13,
-
       fontWeight: '600',
-
       color:
         colors.textMuted,
     },
 
     metricValue: {
       marginTop: 1,
-
       fontSize: 13,
-
       lineHeight: 16,
-
       fontWeight: '800',
-
       color:
         colors.text,
     },
@@ -952,66 +930,48 @@ function createStyles(
 
     sectionTitle: {
       marginBottom: 13,
-
       fontSize: 18,
-
       fontWeight: '700',
     },
 
     hourlyList: {
       gap: 10,
-
       paddingRight: 20,
     },
 
     hourlyCard: {
       width: 78,
-
       minHeight: 118,
-
       alignItems: 'center',
-
       justifyContent:
         'space-between',
-
       paddingHorizontal: 8,
-
       paddingVertical: 10,
-
       borderRadius: 12,
-
       backgroundColor:
         colors.surface,
-
       borderWidth: 1,
-
       borderColor:
         colors.border,
     },
 
     hourlyTime: {
       fontSize: 13,
-
       fontWeight: '700',
-
       color:
         colors.text,
     },
 
     hourlyTemperature: {
       fontSize: 19,
-
       fontWeight: '700',
-
       color:
         colors.text,
     },
 
     hourlyRain: {
       fontSize: 11,
-
       fontWeight: '600',
-
       color:
         colors.textMuted,
     },
@@ -1022,90 +982,67 @@ function createStyles(
 
     dailyContainer: {
       overflow: 'hidden',
-
       borderRadius: 14,
-
       borderWidth: 1,
-
       borderColor:
         colors.border,
-
       backgroundColor:
         colors.surface,
     },
 
     dailyRow: {
       minHeight: 68,
-
       flexDirection: 'row',
-
       alignItems: 'center',
-
       paddingHorizontal: 14,
     },
 
     dailyDay: {
       flex: 1,
-
       fontSize: 15,
-
       fontWeight: '700',
-
       color:
         colors.text,
     },
 
     dailyCondition: {
       width: 82,
-
       flexDirection: 'row',
-
       alignItems: 'center',
-
       gap: 6,
     },
 
     dailyRain: {
       fontSize: 12,
-
       color:
         colors.textMuted,
     },
 
     dailyTemperatures: {
       width: 72,
-
       flexDirection: 'row',
-
       justifyContent:
         'flex-end',
-
       gap: 10,
     },
 
     dailyMax: {
       fontSize: 16,
-
       fontWeight: '800',
-
       color:
         colors.text,
     },
 
     dailyMin: {
       fontSize: 16,
-
       fontWeight: '600',
-
       color:
         colors.textMuted,
     },
 
     dailyDivider: {
       height: 1,
-
       marginLeft: 14,
-
       backgroundColor:
         colors.border,
     },
