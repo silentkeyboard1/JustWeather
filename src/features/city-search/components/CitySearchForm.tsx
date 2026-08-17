@@ -81,7 +81,7 @@ export function CitySearchForm({
             <Text
               style={styles.buttonText}
             >
-              Wetter suchen
+              search weather
             </Text>
           </View>
         )}

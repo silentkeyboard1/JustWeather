@@ -25,10 +25,15 @@ export type WeatherIconName =
 
 export type WeatherCondition = {
   type: WeatherConditionType;
-
   label: string;
 
   color: string;
+
+  /**
+   * Text/icon color that has enough
+   * contrast against the weather color.
+   */
+  foregroundColor: string;
 
   icon: WeatherIconName;
 };
@@ -37,18 +42,17 @@ export function getWeatherCondition(
   weatherCode: number,
   isDay = true
 ): WeatherCondition {
-  /**
-   * Clear sky
-   */
   if (weatherCode === 0) {
     return {
       type: 'clear',
-
       label: 'Clear sky',
 
       color: isDay
         ? weatherPalette.sun
         : weatherPalette.clearSky,
+
+      foregroundColor:
+        weatherPalette.dark,
 
       icon: isDay
         ? 'sun'
@@ -56,80 +60,73 @@ export function getWeatherCondition(
     };
   }
 
-  /**
-   * Mainly clear
-   */
   if (weatherCode === 1) {
     return {
       type: 'partly-cloudy',
-
       label: 'Mainly clear',
 
       color:
         weatherPalette.clearSky,
 
+      foregroundColor:
+        weatherPalette.dark,
+
       icon: isDay
         ? 'cloud-sun'
         : 'cloud-moon',
     };
   }
 
-  /**
-   * Partly cloudy
-   */
   if (weatherCode === 2) {
     return {
       type: 'partly-cloudy',
-
       label: 'Partly cloudy',
 
       color:
         weatherPalette.clearSky,
 
+      foregroundColor:
+        weatherPalette.dark,
+
       icon: isDay
         ? 'cloud-sun'
         : 'cloud-moon',
     };
   }
 
-  /**
-   * Overcast
-   */
   if (weatherCode === 3) {
     return {
       type: 'cloudy',
-
       label: 'Overcast',
 
       color:
         weatherPalette.cloudy,
 
+      foregroundColor:
+        weatherPalette.light,
+
       icon: 'cloud',
     };
   }
 
-  /**
-   * Fog
-   */
   if (
     weatherCode === 45 ||
     weatherCode === 48
   ) {
     return {
       type: 'fog',
-
       label: 'Fog',
 
       color:
         weatherPalette.cloudy,
 
+      foregroundColor:
+        weatherPalette.light,
+
       icon: 'cloud-fog',
     };
   }
 
-  /**
-   * Drizzle / freezing drizzle
-   */
   if (
     [
       51,
@@ -141,19 +138,18 @@ export function getWeatherCondition(
   ) {
     return {
       type: 'drizzle',
-
       label: 'Drizzle',
 
       color:
         weatherPalette.rain,
 
+      foregroundColor:
+        weatherPalette.light,
+
       icon: 'cloud-drizzle',
     };
   }
 
-  /**
-   * Rain / freezing rain
-   */
   if (
     [
       61,
@@ -165,19 +161,18 @@ export function getWeatherCondition(
   ) {
     return {
       type: 'rain',
-
       label: 'Rain',
 
       color:
         weatherPalette.rain,
 
+      foregroundColor:
+        weatherPalette.light,
+
       icon: 'cloud-rain',
     };
   }
 
-  /**
-   * Snow
-   */
   if (
     [
       71,
@@ -188,19 +183,18 @@ export function getWeatherCondition(
   ) {
     return {
       type: 'snow',
-
       label: 'Snow',
 
       color:
         weatherPalette.clearSky,
 
+      foregroundColor:
+        weatherPalette.dark,
+
       icon: 'snowflake',
     };
   }
 
-  /**
-   * Rain showers
-   */
   if (
     [
       80,
@@ -210,38 +204,36 @@ export function getWeatherCondition(
   ) {
     return {
       type: 'rain',
-
       label: 'Rain showers',
 
       color:
         weatherPalette.rain,
 
+      foregroundColor:
+        weatherPalette.light,
+
       icon: 'cloud-rain',
     };
   }
 
-  /**
-   * Snow showers
-   */
   if (
     weatherCode === 85 ||
     weatherCode === 86
   ) {
     return {
       type: 'snow',
-
       label: 'Snow showers',
 
       color:
         weatherPalette.clearSky,
 
+      foregroundColor:
+        weatherPalette.dark,
+
       icon: 'snowflake',
     };
   }
 
-  /**
-   * Thunderstorm
-   */
   if (
     weatherCode === 95 ||
     weatherCode === 96 ||
@@ -249,27 +241,27 @@ export function getWeatherCondition(
   ) {
     return {
       type: 'thunderstorm',
-
       label: 'Thunderstorm',
 
       color:
         weatherPalette.rain,
 
+      foregroundColor:
+        weatherPalette.light,
+
       icon: 'cloud-lightning',
     };
   }
 
-  /**
-   * Safe fallback in case the API
-   * ever returns a code we do not know.
-   */
   return {
     type: 'unknown',
-
     label: 'Unknown',
 
     color:
       weatherPalette.cloudy,
+
+    foregroundColor:
+      weatherPalette.light,
 
     icon: 'cloud',
   };

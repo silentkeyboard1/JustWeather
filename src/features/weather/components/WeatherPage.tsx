@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useState,
 } from 'react';
@@ -58,61 +59,70 @@ export function WeatherPage({
     setIsLoading,
   ] = useState(true);
 
+  const [
+    isRefreshing,
+    setIsRefreshing,
+  ] = useState(false);
+
   const [error, setError] =
     useState<string | null>(
       null
     );
 
+  const loadWeather =
+    useCallback(
+      async (
+        showInitialLoader = false
+      ) => {
+        if (showInitialLoader) {
+          setIsLoading(true);
+        }
+
+        setError(null);
+
+        try {
+          const loadedWeather =
+            await getWeather(city);
+
+          setWeather(
+            loadedWeather
+          );
+        } catch (error) {
+          console.error(
+            `Failed to load weather for ${city.name}:`,
+            error
+          );
+
+          setError(
+            'Weather data could not be loaded.'
+          );
+        } finally {
+          if (showInitialLoader) {
+            setIsLoading(false);
+          }
+        }
+      },
+      [
+        city.id,
+        city.latitude,
+        city.longitude,
+        city.name,
+      ]
+    );
+
   useEffect(() => {
-    let isMounted = true;
+    void loadWeather(true);
+  }, [loadWeather]);
 
-    async function loadWeather() {
-      setIsLoading(true);
+  async function handleRefresh() {
+    setIsRefreshing(true);
 
-      setError(null);
-
-      try {
-        const loadedWeather =
-          await getWeather(city);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setWeather(
-          loadedWeather
-        );
-      } catch (error) {
-        console.error(
-          `Failed to load weather for ${city.name}:`,
-          error
-        );
-
-        if (!isMounted) {
-          return;
-        }
-
-        setError(
-          'Weather data could not be loaded.'
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
+    try {
+      await loadWeather(false);
+    } finally {
+      setIsRefreshing(false);
     }
-
-    void loadWeather();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [
-    city.id,
-    city.latitude,
-    city.longitude,
-    city.name,
-  ]);
+  }
 
   const condition =
     weather
@@ -127,6 +137,9 @@ export function WeatherPage({
       city={city}
       weather={weather}
       isLoading={isLoading}
+      isRefreshing={
+        isRefreshing
+      }
       error={error}
       showFavoriteButton={
         !isCurrentLocation
@@ -135,16 +148,12 @@ export function WeatherPage({
       onToggleFavorite={() =>
         onToggleFavorite(city)
       }
+      onRefresh={
+        handleRefresh
+      }
     />
   );
 
-  /**
-   * Search results can still use the
-   * normal background.
-   *
-   * On Home we enable the reactive
-   * weather gradient.
-   */
   if (!useWeatherBackground) {
     return (
       <View style={styles.container}>
