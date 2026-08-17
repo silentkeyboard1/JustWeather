@@ -59,7 +59,7 @@ const darkColors: AppColors = {
 
   textMuted: '#A6B2BB',
 
-  border: '#33404B',
+  border: '#101820',
 
   primary: '#F4F5F7',
 

@@ -2,8 +2,8 @@ export const weatherPalette = {
   light: '#F4F5F7',
   dark: '#302F2C',
 
-  sun: '#FFCC33',
-  rain: '#004263',
-  clearSky: '#ABD9F0',
-  cloudy: '#7D7D7D',
+  sun: '#ffcc337d',
+  rain: '#00426390',
+  clearSky: '#abd9f078',
+  cloudy: '#7d7d7d82',
 } as const;

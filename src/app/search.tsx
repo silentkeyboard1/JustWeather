@@ -532,18 +532,6 @@ function createStyles(
       elevation: 12,
 
       zIndex: 100,
-
-      shadowColor:
-        colors.text,
-
-      shadowOffset: {
-        width: 0,
-        height: 5,
-      },
-
-      shadowOpacity: 0.2,
-
-      shadowRadius: 9,
     },
 
     buttonPressed: {

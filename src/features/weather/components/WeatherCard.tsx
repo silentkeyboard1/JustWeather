@@ -76,11 +76,10 @@ export function WeatherCard({
   const insets =
     useSafeAreaInsets();
 
-  const { colors } =
-    useAppTheme();
-
-  const styles =
-    createStyles(colors);
+  const {
+    colors,
+    isDark,
+  } = useAppTheme();
 
   const currentCondition =
     weather
@@ -90,10 +89,24 @@ export function WeatherCard({
         )
       : null;
 
-  const foregroundColor =
-    currentCondition
-      ?.foregroundColor ??
-    colors.text;
+  /*
+   * Light mode:
+   * all normal text uses #302F2C.
+   *
+   * Dark mode:
+   * keep the normal theme/weather-aware
+   * foreground color.
+   */
+  const textColor =
+  isDark
+    ? colors.text
+    : '#302F2C';
+
+  const styles =
+    createStyles(
+      colors,
+      textColor
+    );
 
   const temperatureSize =
     Math.min(
@@ -128,7 +141,7 @@ export function WeatherCard({
             colors.primary,
           ]}
           tintColor={
-            foregroundColor
+            textColor
           }
           progressBackgroundColor={
             colors.surface
@@ -151,28 +164,18 @@ export function WeatherCard({
         >
           <Text
             numberOfLines={1}
-            style={[
-              styles.cityName,
-
-              {
-                color:
-                  foregroundColor,
-              },
-            ]}
+            style={
+              styles.cityName
+            }
           >
             {city.name}
           </Text>
 
           <Text
             numberOfLines={1}
-            style={[
-              styles.cityLocation,
-
-              {
-                color:
-                  foregroundColor,
-              },
-            ]}
+            style={
+              styles.cityLocation
+            }
           >
             {city.region
               ? `${city.region}, `
@@ -208,7 +211,7 @@ export function WeatherCard({
                 color={
                   isFavorite
                     ? colors.favorite
-                    : foregroundColor
+                    : textColor
                 }
                 fill={
                   isFavorite
@@ -222,69 +225,56 @@ export function WeatherCard({
 
       {/* INITIAL LOADING */}
 
-      {isLoading && !weather && (
-        <View
-          style={
-            styles.loadingContainer
-          }
-        >
-          <ActivityIndicator
-            size="large"
-            color={
-              foregroundColor
+      {isLoading &&
+        !weather && (
+          <View
+            style={
+              styles.loadingContainer
             }
-          />
-
-          <Text
-            style={[
-              styles.loadingText,
-
-              {
-                color:
-                  foregroundColor,
-              },
-            ]}
           >
-            Loading weather...
-          </Text>
-        </View>
-      )}
+            <ActivityIndicator
+              size="large"
+              color={
+                textColor
+              }
+            />
+
+            <Text
+              style={
+                styles.loadingText
+              }
+            >
+              Loading weather...
+            </Text>
+          </View>
+        )}
 
       {/* ERROR */}
 
-      {error && !weather && (
-        <View
-          style={
-            styles.errorContainer
-          }
-        >
-          <Text
-            style={[
-              styles.errorTitle,
-
-              {
-                color:
-                  foregroundColor,
-              },
-            ]}
+      {error &&
+        !weather && (
+          <View
+            style={
+              styles.errorContainer
+            }
           >
-            Weather unavailable
-          </Text>
+            <Text
+              style={
+                styles.errorTitle
+              }
+            >
+              Weather unavailable
+            </Text>
 
-          <Text
-            style={[
-              styles.errorText,
-
-              {
-                color:
-                  foregroundColor,
-              },
-            ]}
-          >
-            {error}
-          </Text>
-        </View>
-      )}
+            <Text
+              style={
+                styles.errorText
+              }
+            >
+              {error}
+            </Text>
+          </View>
+        )}
 
       {weather && (
         <>
@@ -300,9 +290,6 @@ export function WeatherCard({
                 styles.temperature,
 
                 {
-                  color:
-                    foregroundColor,
-
                   fontSize:
                     temperatureSize,
 
@@ -319,6 +306,8 @@ export function WeatherCard({
               °
             </Text>
 
+            {/* WEATHER CONDITION */}
+
             <View
               style={
                 styles.conditionRow
@@ -331,21 +320,16 @@ export function WeatherCard({
                   }
                   size={22}
                   color={
-                    foregroundColor
+                    textColor
                   }
                   strokeWidth={2}
                 />
               )}
 
               <Text
-                style={[
-                  styles.conditionLabel,
-
-                  {
-                    color:
-                      foregroundColor,
-                  },
-                ]}
+                style={
+                  styles.conditionLabel
+                }
               >
                 {
                   currentCondition?.label
@@ -357,14 +341,9 @@ export function WeatherCard({
           {/* SEPARATOR */}
 
           <View
-            style={[
-              styles.separator,
-
-              {
-                backgroundColor:
-                  foregroundColor,
-              },
-            ]}
+            style={
+              styles.separator
+            }
           />
 
           {/* CURRENT METRICS */}
@@ -382,7 +361,7 @@ export function WeatherCard({
               <Thermometer
                 size={18}
                 color={
-                  colors.text
+                  textColor
                 }
                 strokeWidth={2}
               />
@@ -422,7 +401,7 @@ export function WeatherCard({
               <Droplets
                 size={18}
                 color={
-                  colors.text
+                  textColor
                 }
                 strokeWidth={2}
               />
@@ -462,7 +441,7 @@ export function WeatherCard({
               <Wind
                 size={18}
                 color={
-                  colors.text
+                  textColor
                 }
                 strokeWidth={2}
               />
@@ -502,14 +481,9 @@ export function WeatherCard({
             style={styles.section}
           >
             <Text
-              style={[
-                styles.sectionTitle,
-
-                {
-                  color:
-                    foregroundColor,
-                },
-              ]}
+              style={
+                styles.sectionTitle
+              }
             >
               Hourly Forecast
             </Text>
@@ -534,7 +508,9 @@ export function WeatherCard({
 
                   return (
                     <View
-                      key={hour.time}
+                      key={
+                        hour.time
+                      }
                       style={
                         styles.hourlyCard
                       }
@@ -555,7 +531,7 @@ export function WeatherCard({
                         }
                         size={30}
                         color={
-                          colors.text
+                          textColor
                         }
                         strokeWidth={
                           1.9
@@ -598,14 +574,9 @@ export function WeatherCard({
             }
           >
             <Text
-              style={[
-                styles.sectionTitle,
-
-                {
-                  color:
-                    foregroundColor,
-                },
-              ]}
+              style={
+                styles.sectionTitle
+              }
             >
               7 Day Forecast
             </Text>
@@ -628,7 +599,9 @@ export function WeatherCard({
 
                   return (
                     <View
-                      key={day.date}
+                      key={
+                        day.date
+                      }
                     >
                       <View
                         style={
@@ -658,7 +631,7 @@ export function WeatherCard({
                             }
                             size={25}
                             color={
-                              colors.text
+                              textColor
                             }
                             strokeWidth={
                               1.9
@@ -749,9 +722,10 @@ function formatHour(
 function formatDay(
   date: string
 ) {
-  const parsedDate = new Date(
-    `${date}T12:00:00`
-  );
+  const parsedDate =
+    new Date(
+      `${date}T12:00:00`
+    );
 
   return parsedDate.toLocaleDateString(
     'en-US',
@@ -762,7 +736,8 @@ function formatDay(
 }
 
 function createStyles(
-  colors: AppColors
+  colors: AppColors,
+  textColor: string
 ) {
   return StyleSheet.create({
     container: {
@@ -777,39 +752,60 @@ function createStyles(
 
     header: {
       flexDirection: 'row',
+
       alignItems: 'center',
+
       minHeight: 54,
     },
 
     cityInfo: {
       flex: 1,
+
       paddingRight: 12,
     },
 
     cityName: {
       fontSize: 28,
+
       lineHeight: 32,
+
       fontWeight: '800',
+
       letterSpacing: -0.7,
+
+      color:
+        textColor,
     },
 
     cityLocation: {
       marginTop: 3,
+
       fontSize: 14,
+
       fontWeight: '500',
+
+      color:
+        textColor,
+
       opacity: 0.72,
     },
 
     favoriteButton: {
       width: 52,
+
       height: 52,
+
       alignItems: 'center',
-      justifyContent: 'center',
+
+      justifyContent:
+        'center',
+
       borderRadius: 26,
     },
 
     pressed: {
       opacity: 0.55,
+
       transform: [
         {
           scale: 0.94,
@@ -819,86 +815,145 @@ function createStyles(
 
     loadingContainer: {
       flex: 1,
+
       minHeight: 400,
+
       alignItems: 'center',
-      justifyContent: 'center',
+
+      justifyContent:
+        'center',
+
       gap: 12,
     },
 
     loadingText: {
       fontSize: 15,
+
       fontWeight: '500',
+
+      color:
+        textColor,
     },
 
     errorContainer: {
       minHeight: 350,
-      justifyContent: 'center',
+
+      justifyContent:
+        'center',
+
       alignItems: 'center',
+
       gap: 8,
+
       paddingHorizontal: 20,
     },
 
     errorTitle: {
       fontSize: 20,
+
       fontWeight: '700',
+
+      color:
+        textColor,
     },
 
     errorText: {
       textAlign: 'center',
+
+      color:
+        textColor,
     },
 
     temperatureSection: {
       marginTop: 22,
-      alignItems: 'center',
-      justifyContent: 'center',
+
+      flexDirection: 'row',
+
+      alignItems:
+        'flex-end',
+
+      justifyContent:
+        'space-between',
     },
 
     temperature: {
       fontWeight: '800',
+
       letterSpacing: -8,
-      textAlign: 'center',
+
+      textAlign: 'left',
+
+      color:
+        textColor,
     },
 
     conditionRow: {
       flexDirection: 'row',
+
       alignItems: 'center',
-      justifyContent: 'center',
+
       gap: 7,
-      marginTop: 2,
+
+      paddingBottom: 18,
     },
 
     conditionLabel: {
       fontSize: 16,
+
       fontWeight: '600',
+
+      color:
+        textColor,
+
       opacity: 0.8,
     },
 
     separator: {
       height: 2,
+
       marginTop: 28,
+
       marginBottom: 24,
+
       borderRadius: 1,
+
+      backgroundColor:
+        textColor,
+
       opacity: 0.28,
     },
 
     metricsRow: {
       flexDirection: 'row',
+
       gap: 8,
     },
 
     metricPill: {
       flex: 1,
+
       minHeight: 58,
+
       flexDirection: 'row',
+
       alignItems: 'center',
-      justifyContent: 'center',
+
+      justifyContent:
+        'center',
+
       gap: 7,
-      paddingHorizontal: 8,
-      paddingVertical: 9,
+
+      paddingHorizontal: 0,
+
+      paddingVertical: 0,
+
       borderRadius: 12,
+
       backgroundColor:
         colors.surface,
+
       borderWidth: 1,
+
       borderColor:
         colors.border,
     },
@@ -909,19 +964,28 @@ function createStyles(
 
     metricLabel: {
       fontSize: 10,
+
       lineHeight: 13,
+
       fontWeight: '600',
+
       color:
-        colors.textMuted,
+        textColor,
+
+      opacity: 0.72,
     },
 
     metricValue: {
       marginTop: 1,
+
       fontSize: 13,
+
       lineHeight: 16,
+
       fontWeight: '800',
+
       color:
-        colors.text,
+        textColor,
     },
 
     section: {
@@ -930,50 +994,73 @@ function createStyles(
 
     sectionTitle: {
       marginBottom: 13,
+
       fontSize: 18,
+
       fontWeight: '700',
+
+      color:
+        textColor,
     },
 
     hourlyList: {
       gap: 10,
+
       paddingRight: 20,
     },
 
     hourlyCard: {
       width: 78,
+
       minHeight: 118,
+
       alignItems: 'center',
+
       justifyContent:
         'space-between',
+
       paddingHorizontal: 8,
+
       paddingVertical: 10,
+
       borderRadius: 12,
+
       backgroundColor:
         colors.surface,
+
       borderWidth: 1,
+
       borderColor:
         colors.border,
     },
 
     hourlyTime: {
       fontSize: 13,
+
       fontWeight: '700',
+
       color:
-        colors.text,
+        textColor,
     },
 
     hourlyTemperature: {
       fontSize: 19,
+
       fontWeight: '700',
+
       color:
-        colors.text,
+        textColor,
     },
 
     hourlyRain: {
       fontSize: 11,
+
       fontWeight: '600',
+
       color:
-        colors.textMuted,
+        textColor,
+
+      opacity: 0.72,
     },
 
     dailySection: {
@@ -982,67 +1069,94 @@ function createStyles(
 
     dailyContainer: {
       overflow: 'hidden',
+
       borderRadius: 14,
+
       borderWidth: 1,
+
       borderColor:
         colors.border,
+
       backgroundColor:
         colors.surface,
     },
 
     dailyRow: {
       minHeight: 68,
+
       flexDirection: 'row',
+
       alignItems: 'center',
+
       paddingHorizontal: 14,
     },
 
     dailyDay: {
       flex: 1,
+
       fontSize: 15,
+
       fontWeight: '700',
+
       color:
-        colors.text,
+        textColor,
     },
 
     dailyCondition: {
       width: 82,
+
       flexDirection: 'row',
+
       alignItems: 'center',
+
       gap: 6,
     },
 
     dailyRain: {
       fontSize: 12,
+
       color:
-        colors.textMuted,
+        textColor,
+
+      opacity: 0.72,
     },
 
     dailyTemperatures: {
       width: 72,
+
       flexDirection: 'row',
+
       justifyContent:
         'flex-end',
+
       gap: 10,
     },
 
     dailyMax: {
       fontSize: 16,
+
       fontWeight: '800',
+
       color:
-        colors.text,
+        textColor,
     },
 
     dailyMin: {
       fontSize: 16,
+
       fontWeight: '600',
+
       color:
-        colors.textMuted,
+        textColor,
+
+      opacity: 0.7,
     },
 
     dailyDivider: {
       height: 1,
+
       marginLeft: 14,
+
       backgroundColor:
         colors.border,
     },
