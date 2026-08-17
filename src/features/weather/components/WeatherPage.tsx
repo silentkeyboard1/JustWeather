@@ -151,6 +151,11 @@ export function WeatherPage({
       onRefresh={
         handleRefresh
       }
+
+      // Home = full-screen layout.
+      fullScreen={
+        useWeatherBackground
+      }
     />
   );
 

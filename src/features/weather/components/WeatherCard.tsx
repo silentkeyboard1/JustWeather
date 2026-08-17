@@ -16,6 +16,10 @@ import {
   Wind,
 } from 'lucide-react-native';
 
+import {
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+
 import type { City } from '../../city-search/model/city';
 
 import type { Weather } from '../model/weather';
@@ -26,8 +30,9 @@ import {
 
 import { WeatherIcon } from './WeatherIcon';
 
+import type { AppColors } from '../../../shared/theme/theme';
+
 import {
-  AppColors,
   useAppTheme,
 } from '../../../shared/theme/theme';
 
@@ -49,6 +54,8 @@ type WeatherCardProps = {
   onToggleFavorite?: () => void;
 
   onRefresh: () => void;
+
+  fullScreen?: boolean;
 };
 
 export function WeatherCard({
@@ -61,9 +68,13 @@ export function WeatherCard({
   isFavorite = false,
   onToggleFavorite,
   onRefresh,
+  fullScreen = false,
 }: WeatherCardProps) {
   const { width } =
     useWindowDimensions();
+
+  const insets =
+    useSafeAreaInsets();
 
   const { colors } =
     useAppTheme();
@@ -86,16 +97,24 @@ export function WeatherCard({
 
   const temperatureSize =
     Math.min(
-      width * 0.4,
-      150
+      width * 0.38,
+      148
     );
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={
-        styles.content
-      }
+      contentContainerStyle={[
+        styles.content,
+
+        fullScreen && {
+          paddingTop:
+            insets.top + 14,
+
+          paddingBottom:
+            insets.bottom + 110,
+        },
+      ]}
       showsVerticalScrollIndicator={
         false
       }
@@ -109,29 +128,51 @@ export function WeatherCard({
             colors.primary,
           ]}
           tintColor={
-            colors.primary
+            foregroundColor
           }
           progressBackgroundColor={
             colors.surface
+          }
+          progressViewOffset={
+            fullScreen
+              ? insets.top
+              : 0
           }
         />
       }
     >
       {/* CITY HEADER */}
+
       <View
-        style={styles.cityCard}
+        style={styles.header}
       >
-        <View style={styles.cityInfo}>
+        <View
+          style={styles.cityInfo}
+        >
           <Text
-            style={styles.cityName}
+            numberOfLines={1}
+            style={[
+              styles.cityName,
+
+              {
+                color:
+                  foregroundColor,
+              },
+            ]}
           >
             {city.name}
           </Text>
 
           <Text
-            style={
-              styles.cityLocation
-            }
+            numberOfLines={1}
+            style={[
+              styles.cityLocation,
+
+              {
+                color:
+                  foregroundColor,
+              },
+            ]}
           >
             {city.region
               ? `${city.region}, `
@@ -153,7 +194,7 @@ export function WeatherCard({
               onPress={
                 onToggleFavorite
               }
-              hitSlop={8}
+              hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel={
                 isFavorite
@@ -163,11 +204,11 @@ export function WeatherCard({
             >
               <Star
                 size={34}
-                strokeWidth={2.2}
+                strokeWidth={2}
                 color={
                   isFavorite
                     ? colors.favorite
-                    : colors.text
+                    : foregroundColor
                 }
                 fill={
                   isFavorite
@@ -179,7 +220,8 @@ export function WeatherCard({
           )}
       </View>
 
-      {/* INITIAL WEATHER LOADING */}
+      {/* INITIAL LOADING */}
+
       {isLoading && !weather && (
         <View
           style={
@@ -196,6 +238,7 @@ export function WeatherCard({
           <Text
             style={[
               styles.loadingText,
+
               {
                 color:
                   foregroundColor,
@@ -208,6 +251,7 @@ export function WeatherCard({
       )}
 
       {/* ERROR */}
+
       {error && !weather && (
         <View
           style={
@@ -217,6 +261,7 @@ export function WeatherCard({
           <Text
             style={[
               styles.errorTitle,
+
               {
                 color:
                   foregroundColor,
@@ -229,6 +274,7 @@ export function WeatherCard({
           <Text
             style={[
               styles.errorText,
+
               {
                 color:
                   foregroundColor,
@@ -243,6 +289,7 @@ export function WeatherCard({
       {weather && (
         <>
           {/* CURRENT TEMPERATURE */}
+
           <View
             style={
               styles.temperatureSection
@@ -251,6 +298,7 @@ export function WeatherCard({
             <Text
               style={[
                 styles.temperature,
+
                 {
                   color:
                     foregroundColor,
@@ -260,7 +308,7 @@ export function WeatherCard({
 
                   lineHeight:
                     temperatureSize *
-                    1.05,
+                    1.02,
                 },
               ]}
             >
@@ -271,25 +319,47 @@ export function WeatherCard({
               °
             </Text>
 
-            <Text
-              style={[
-                styles.conditionLabel,
-                {
-                  color:
-                    foregroundColor,
-                },
-              ]}
-            >
-              {
-                currentCondition?.label
+            <View
+              style={
+                styles.conditionRow
               }
-            </Text>
+            >
+              {currentCondition && (
+                <WeatherIcon
+                  name={
+                    currentCondition.icon
+                  }
+                  size={22}
+                  color={
+                    foregroundColor
+                  }
+                  strokeWidth={2}
+                />
+              )}
+
+              <Text
+                style={[
+                  styles.conditionLabel,
+
+                  {
+                    color:
+                      foregroundColor,
+                  },
+                ]}
+              >
+                {
+                  currentCondition?.label
+                }
+              </Text>
+            </View>
           </View>
 
           {/* SEPARATOR */}
+
           <View
             style={[
               styles.separator,
+
               {
                 backgroundColor:
                   foregroundColor,
@@ -298,6 +368,7 @@ export function WeatherCard({
           />
 
           {/* CURRENT METRICS */}
+
           <View
             style={
               styles.metricsRow
@@ -309,20 +380,26 @@ export function WeatherCard({
               }
             >
               <Thermometer
-                size={17}
+                size={18}
                 color={
                   colors.text
                 }
-                strokeWidth={2.2}
+                strokeWidth={2}
               />
 
-              <Text
-                numberOfLines={1}
+              <View
                 style={
-                  styles.metricText
+                  styles.metricContent
                 }
               >
-                Feels{' '}
+                <Text
+                  style={
+                    styles.metricLabel
+                  }
+                >
+                  Feels like
+                </Text>
+
                 <Text
                   style={
                     styles.metricValue
@@ -334,7 +411,7 @@ export function WeatherCard({
                   )}
                   °
                 </Text>
-              </Text>
+              </View>
             </View>
 
             <View
@@ -343,20 +420,26 @@ export function WeatherCard({
               }
             >
               <Droplets
-                size={17}
+                size={18}
                 color={
                   colors.text
                 }
-                strokeWidth={2.2}
+                strokeWidth={2}
               />
 
-              <Text
-                numberOfLines={1}
+              <View
                 style={
-                  styles.metricText
+                  styles.metricContent
                 }
               >
-                Humidity{' '}
+                <Text
+                  style={
+                    styles.metricLabel
+                  }
+                >
+                  Humidity
+                </Text>
+
                 <Text
                   style={
                     styles.metricValue
@@ -368,7 +451,7 @@ export function WeatherCard({
                   }
                   %
                 </Text>
-              </Text>
+              </View>
             </View>
 
             <View
@@ -377,40 +460,51 @@ export function WeatherCard({
               }
             >
               <Wind
-                size={17}
+                size={18}
                 color={
                   colors.text
                 }
-                strokeWidth={2.2}
+                strokeWidth={2}
               />
 
-              <Text
-                numberOfLines={1}
+              <View
                 style={
-                  styles.metricText
+                  styles.metricContent
                 }
               >
-                Wind{' '}
                 <Text
+                  style={
+                    styles.metricLabel
+                  }
+                >
+                  Wind
+                </Text>
+
+                <Text
+                  numberOfLines={1}
                   style={
                     styles.metricValue
                   }
                 >
-                  {weather.current
-                    .windSpeed}{' '}
+                  {Math.round(
+                    weather.current
+                      .windSpeed
+                  )}{' '}
                   km/h
                 </Text>
-              </Text>
+              </View>
             </View>
           </View>
 
           {/* HOURLY FORECAST */}
+
           <View
             style={styles.section}
           >
             <Text
               style={[
                 styles.sectionTitle,
+
                 {
                   color:
                     foregroundColor,
@@ -459,7 +553,7 @@ export function WeatherCard({
                         name={
                           condition.icon
                         }
-                        size={31}
+                        size={30}
                         color={
                           colors.text
                         }
@@ -478,6 +572,17 @@ export function WeatherCard({
                         )}
                         °
                       </Text>
+
+                      <Text
+                        style={
+                          styles.hourlyRain
+                        }
+                      >
+                        {
+                          hour.precipitationProbability
+                        }
+                        %
+                      </Text>
                     </View>
                   );
                 }
@@ -486,6 +591,7 @@ export function WeatherCard({
           </View>
 
           {/* 7 DAY FORECAST */}
+
           <View
             style={
               styles.dailySection
@@ -494,6 +600,7 @@ export function WeatherCard({
             <Text
               style={[
                 styles.sectionTitle,
+
                 {
                   color:
                     foregroundColor,
@@ -549,7 +656,7 @@ export function WeatherCard({
                             name={
                               condition.icon
                             }
-                            size={26}
+                            size={25}
                             color={
                               colors.text
                             }
@@ -615,13 +722,6 @@ export function WeatherCard({
               )}
             </View>
           </View>
-
-          {/* Space for floating search button */}
-          <View
-            style={
-              styles.bottomSpacer
-            }
-          />
         </>
       )}
     </ScrollView>
@@ -671,104 +771,81 @@ function createStyles(
 
     content: {
       paddingHorizontal: 20,
-
-      paddingTop: 34,
-
+      paddingTop: 30,
       paddingBottom: 24,
     },
 
-    cityCard: {
+    /*
+     * No card anymore.
+     *
+     * The city information now sits
+     * directly on the weather gradient.
+     */
+    header: {
       flexDirection: 'row',
-
       alignItems: 'center',
-
-      paddingHorizontal: 16,
-
-      paddingVertical: 12,
-
-      borderRadius: 14,
-
-      backgroundColor:
-        colors.surface,
-
-      borderWidth: 1,
-
-      borderColor:
-        colors.border,
+      minHeight: 54,
     },
 
     cityInfo: {
       flex: 1,
+      paddingRight: 12,
     },
 
     cityName: {
-      fontSize: 21,
-
-      lineHeight: 24,
-
-      fontWeight: '700',
-
-      color: colors.text,
+      fontSize: 28,
+      lineHeight: 32,
+      fontWeight: '800',
+      letterSpacing: -0.7,
     },
 
     cityLocation: {
-      marginTop: 2,
-
-      fontSize: 15,
-
-      color: colors.text,
+      marginTop: 3,
+      fontSize: 14,
+      fontWeight: '500',
+      opacity: 0.72,
     },
 
     favoriteButton: {
-      width: 44,
-
-      height: 44,
-
+      width: 52,
+      height: 52,
       alignItems: 'center',
-
-      justifyContent:
-        'center',
+      justifyContent: 'center',
+      borderRadius: 26,
     },
 
     pressed: {
-      opacity: 0.6,
+      opacity: 0.55,
+      transform: [
+        {
+          scale: 0.94,
+        },
+      ],
     },
 
     loadingContainer: {
       flex: 1,
-
       minHeight: 400,
-
       alignItems: 'center',
-
-      justifyContent:
-        'center',
-
+      justifyContent: 'center',
       gap: 12,
     },
 
     loadingText: {
       fontSize: 15,
-
       fontWeight: '500',
     },
 
     errorContainer: {
       minHeight: 350,
-
-      justifyContent:
-        'center',
-
+      justifyContent: 'center',
       alignItems: 'center',
-
       gap: 8,
-
       paddingHorizontal: 20,
     },
 
     errorTitle: {
       fontSize: 20,
-
       fontWeight: '700',
     },
 
@@ -776,68 +853,62 @@ function createStyles(
       textAlign: 'center',
     },
 
+    /*
+     * Large, clean hero temperature.
+     */
     temperatureSection: {
-      marginTop: 34,
-
-      alignItems:
-        'flex-start',
+      marginTop: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     temperature: {
-      marginLeft: -4,
+      fontWeight: '800',
+      letterSpacing: -8,
+      textAlign: 'center',
+    },
 
-      fontWeight: '700',
-
-      letterSpacing: -7,
+    conditionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 7,
+      marginTop: 2,
     },
 
     conditionLabel: {
-      marginTop: -4,
-
-      marginLeft: 4,
-
       fontSize: 16,
-
       fontWeight: '600',
-
       opacity: 0.8,
     },
 
     separator: {
-      height: 3,
-
-      marginTop: 24,
-
-      marginBottom: 26,
-
-      borderRadius: 2,
-
-      opacity: 0.9,
+      height: 2,
+      marginTop: 28,
+      marginBottom: 24,
+      borderRadius: 1,
+      opacity: 0.28,
     },
 
     metricsRow: {
       flexDirection: 'row',
-
       gap: 8,
     },
 
     metricPill: {
       flex: 1,
-
-      minHeight: 42,
+      minHeight: 58,
 
       flexDirection: 'row',
-
       alignItems: 'center',
+      justifyContent: 'center',
 
-      justifyContent:
-        'center',
+      gap: 7,
 
-      gap: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 9,
 
-      paddingHorizontal: 7,
-
-      borderRadius: 8,
+      borderRadius: 12,
 
       backgroundColor:
         colors.surface,
@@ -848,26 +919,39 @@ function createStyles(
         colors.border,
     },
 
-    metricText: {
+    metricContent: {
       flexShrink: 1,
+    },
 
-      fontSize: 11,
+    metricLabel: {
+      fontSize: 10,
+      lineHeight: 13,
 
       fontWeight: '600',
 
-      color: colors.text,
+      color:
+        colors.textMuted,
     },
 
     metricValue: {
+      marginTop: 1,
+
+      fontSize: 13,
+
+      lineHeight: 16,
+
       fontWeight: '800',
+
+      color:
+        colors.text,
     },
 
     section: {
-      marginTop: 28,
+      marginTop: 30,
     },
 
     sectionTitle: {
-      marginBottom: 12,
+      marginBottom: 13,
 
       fontSize: 18,
 
@@ -883,7 +967,7 @@ function createStyles(
     hourlyCard: {
       width: 78,
 
-      minHeight: 110,
+      minHeight: 118,
 
       alignItems: 'center',
 
@@ -894,7 +978,7 @@ function createStyles(
 
       paddingVertical: 10,
 
-      borderRadius: 9,
+      borderRadius: 12,
 
       backgroundColor:
         colors.surface,
@@ -906,23 +990,34 @@ function createStyles(
     },
 
     hourlyTime: {
-      fontSize: 14,
+      fontSize: 13,
 
       fontWeight: '700',
 
-      color: colors.text,
+      color:
+        colors.text,
     },
 
     hourlyTemperature: {
       fontSize: 19,
 
+      fontWeight: '700',
+
+      color:
+        colors.text,
+    },
+
+    hourlyRain: {
+      fontSize: 11,
+
       fontWeight: '600',
 
-      color: colors.text,
+      color:
+        colors.textMuted,
     },
 
     dailySection: {
-      marginTop: 30,
+      marginTop: 32,
     },
 
     dailyContainer: {
@@ -956,7 +1051,8 @@ function createStyles(
 
       fontWeight: '700',
 
-      color: colors.text,
+      color:
+        colors.text,
     },
 
     dailyCondition: {
@@ -965,9 +1061,6 @@ function createStyles(
       flexDirection: 'row',
 
       alignItems: 'center',
-
-      justifyContent:
-        'flex-start',
 
       gap: 6,
     },
@@ -995,7 +1088,8 @@ function createStyles(
 
       fontWeight: '800',
 
-      color: colors.text,
+      color:
+        colors.text,
     },
 
     dailyMin: {
@@ -1014,10 +1108,6 @@ function createStyles(
 
       backgroundColor:
         colors.border,
-    },
-
-    bottomSpacer: {
-      height: 70,
     },
   });
 }
