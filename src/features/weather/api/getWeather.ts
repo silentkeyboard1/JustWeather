@@ -1,4 +1,5 @@
 import type { City } from '../../city-search/model/city';
+
 import type { Weather } from '../model/weather';
 
 type OpenMeteoWeatherResponse = {
@@ -7,19 +8,33 @@ type OpenMeteoWeatherResponse = {
     apparent_temperature: number;
     relative_humidity_2m: number;
     wind_speed_10m: number;
+
+    weather_code: number;
+    is_day: number;
   };
 
   hourly: {
     time: string[];
+
     temperature_2m: number[];
+
     precipitation_probability: number[];
+
+    weather_code: number[];
+
+    is_day: number[];
   };
 
   daily: {
     time: string[];
+
     temperature_2m_max: number[];
+
     temperature_2m_min: number[];
+
     precipitation_probability_max: number[];
+
+    weather_code: number[];
   };
 };
 
@@ -27,12 +42,40 @@ export async function getWeather(
   city: City
 ): Promise<Weather> {
   const response = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_hours=12&forecast_days=7&timezone=auto`
+    `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${city.latitude}` +
+      `&longitude=${city.longitude}` +
+      `&current=` +
+      [
+        'temperature_2m',
+        'apparent_temperature',
+        'relative_humidity_2m',
+        'wind_speed_10m',
+        'weather_code',
+        'is_day',
+      ].join(',') +
+      `&hourly=` +
+      [
+        'temperature_2m',
+        'precipitation_probability',
+        'weather_code',
+        'is_day',
+      ].join(',') +
+      `&daily=` +
+      [
+        'temperature_2m_max',
+        'temperature_2m_min',
+        'precipitation_probability_max',
+        'weather_code',
+      ].join(',') +
+      `&forecast_hours=12` +
+      `&forecast_days=7` +
+      `&timezone=auto`
   );
 
   if (!response.ok) {
     throw new Error(
-      'Fehler beim Laden des Wetters'
+      'Failed to load weather data.'
     );
   }
 
@@ -52,6 +95,12 @@ export async function getWeather(
 
       windSpeed:
         data.current.wind_speed_10m,
+
+      weatherCode:
+        data.current.weather_code,
+
+      isDay:
+        data.current.is_day === 1,
     },
 
     hourly: data.hourly.time.map(
@@ -64,6 +113,12 @@ export async function getWeather(
         precipitationProbability:
           data.hourly
             .precipitation_probability[index],
+
+        weatherCode:
+          data.hourly.weather_code[index],
+
+        isDay:
+          data.hourly.is_day[index] === 1,
       })
     ),
 
@@ -72,14 +127,21 @@ export async function getWeather(
         date,
 
         temperatureMax:
-          data.daily.temperature_2m_max[index],
+          data.daily
+            .temperature_2m_max[index],
 
         temperatureMin:
-          data.daily.temperature_2m_min[index],
+          data.daily
+            .temperature_2m_min[index],
 
         precipitationProbability:
           data.daily
-            .precipitation_probability_max[index],
+            .precipitation_probability_max[
+              index
+            ],
+
+        weatherCode:
+          data.daily.weather_code[index],
       })
     ),
   };

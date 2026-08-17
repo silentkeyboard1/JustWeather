@@ -1,12 +1,6 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { router } from 'expo-router';
+import { router } from "expo-router";
 
 import {
   ActivityIndicator,
@@ -16,68 +10,40 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from 'react-native';
+} from "react-native";
 
-import {
-  LocateFixed,
-  RefreshCw,
-  Search,
-} from 'lucide-react-native';
+import { LocateFixed, RefreshCw, Search } from "lucide-react-native";
 
-import type { City } from '../features/city-search/model/city';
+import type { City } from "../features/city-search/model/city";
 
-import { useFavorites } from '../features/favorites/context/FavoritesContext';
+import { useFavorites } from "../features/favorites/context/FavoritesContext";
 
-import { getCurrentCity } from '../features/location/api/getCurrentCity';
+import { getCurrentCity } from "../features/location/api/getCurrentCity";
 
-import { WeatherPage } from '../features/weather/components/WeatherPage';
+import { WeatherPage } from "../features/weather/components/WeatherPage";
 
-import type { AppColors } from '../shared/theme/theme';
+import type { AppColors } from "../shared/theme/theme";
 
-import { useAppTheme } from '../shared/theme/theme';
+import { useAppTheme } from "../shared/theme/theme";
 
 export default function HomeScreen() {
-  const { width } =
-    useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const { colors } =
-    useAppTheme();
+  const { colors } = useAppTheme();
 
-  const styles =
-    createStyles(colors);
+  const styles = createStyles(colors);
 
-  const pagerRef =
-    useRef<FlatList<City>>(null);
+  const pagerRef = useRef<FlatList<City>>(null);
 
-  const {
-    favoriteCities,
-    isFavorite,
-    toggleFavorite,
-  } = useFavorites();
+  const { favoriteCities, isFavorite, toggleFavorite } = useFavorites();
 
-  const [
-    currentCity,
-    setCurrentCity,
-  ] = useState<City | null>(
-    null
-  );
+  const [currentCity, setCurrentCity] = useState<City | null>(null);
 
-  const [
-    isLoadingLocation,
-    setIsLoadingLocation,
-  ] = useState(true);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
 
-  const [
-    locationError,
-    setLocationError,
-  ] = useState<string | null>(
-    null
-  );
+  const [locationError, setLocationError] = useState<string | null>(null);
 
-  const [
-    activeIndex,
-    setActiveIndex,
-  ] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   /**
    * Unsere Swipe-Seiten.
@@ -85,59 +51,42 @@ export default function HomeScreen() {
    * 0 = aktueller Standort
    * danach alle Favoriten
    */
-  const weatherCities =
-    useMemo(() => {
-      if (currentCity) {
-        return [
-          currentCity,
-          ...favoriteCities,
-        ];
-      }
+  const weatherCities = useMemo(() => {
+    if (currentCity) {
+      return [currentCity, ...favoriteCities];
+    }
 
-      return favoriteCities;
-    }, [
-      currentCity,
-      favoriteCities,
-    ]);
+    return favoriteCities;
+  }, [currentCity, favoriteCities]);
 
-  const loadCurrentLocation =
-    useCallback(async () => {
-      setIsLoadingLocation(
-        true
-      );
+  const loadCurrentLocation = useCallback(async () => {
+    setIsLoadingLocation(true);
 
-      setLocationError(null);
+    setLocationError(null);
 
-      try {
-        const city =
-          await getCurrentCity();
+    try {
+      const city = await getCurrentCity();
 
-        setCurrentCity(city);
-      } catch (error) {
-        console.error(
-          'Standort konnte nicht geladen werden:',
-          error
+      setCurrentCity(city);
+    } catch (error) {
+      console.error("Standort konnte nicht geladen werden:", error);
+
+      if (
+        error instanceof Error &&
+        error.message === "LOCATION_PERMISSION_DENIED"
+      ) {
+        setLocationError(
+          "Ohne Standortberechtigung kann das Wetter für deinen aktuellen Standort nicht angezeigt werden.",
         );
-
-        if (
-          error instanceof Error &&
-          error.message ===
-            'LOCATION_PERMISSION_DENIED'
-        ) {
-          setLocationError(
-            'Ohne Standortberechtigung kann das Wetter für deinen aktuellen Standort nicht angezeigt werden.'
-          );
-        } else {
-          setLocationError(
-            'Dein aktueller Standort konnte nicht ermittelt werden.'
-          );
-        }
-      } finally {
-        setIsLoadingLocation(
-          false
+      } else {
+        setLocationError(
+          "Dein aktueller Standort konnte nicht ermittelt werden.",
         );
       }
-    }, []);
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  }, []);
 
   /**
    * Standort beim Start laden.
@@ -154,10 +103,7 @@ export default function HomeScreen() {
    * zurück auf Seite 0.
    */
   useEffect(() => {
-    if (
-      activeIndex <
-      weatherCities.length
-    ) {
+    if (activeIndex < weatherCities.length) {
       return;
     }
 
@@ -167,23 +113,14 @@ export default function HomeScreen() {
       index: 0,
       animated: true,
     });
-  }, [
-    activeIndex,
-    weatherCities.length,
-  ]);
+  }, [activeIndex, weatherCities.length]);
 
-  async function handleToggleFavorite(
-    city: City
-  ) {
-    if (
-      city.id ===
-      'current-location'
-    ) {
+  async function handleToggleFavorite(city: City) {
+    if (city.id === "current-location") {
       return;
     }
 
-    const wasFavorite =
-      isFavorite(city.id);
+    const wasFavorite = isFavorite(city.id);
 
     await toggleFavorite(city);
 
@@ -192,10 +129,7 @@ export default function HomeScreen() {
      * Favoriten-Seite gelöscht,
      * springen wir zum Standort.
      */
-    if (
-      wasFavorite &&
-      currentCity
-    ) {
+    if (wasFavorite && currentCity) {
       setActiveIndex(0);
 
       pagerRef.current?.scrollToIndex({
@@ -205,13 +139,8 @@ export default function HomeScreen() {
     }
   }
 
-  function handlePageChanged(
-    offsetX: number
-  ) {
-    const newIndex =
-      Math.round(
-        offsetX / width
-      );
+  function handlePageChanged(offsetX: number) {
+    const newIndex = Math.round(offsetX / width);
 
     setActiveIndex(newIndex);
   }
@@ -220,128 +149,55 @@ export default function HomeScreen() {
     void loadCurrentLocation();
   }
 
-  const hasPages =
-    weatherCities.length > 0;
+  const hasPages = weatherCities.length > 0;
 
   return (
     <View style={styles.container}>
       {/* LOCATION LOADING */}
-      {isLoadingLocation &&
-        !hasPages && (
-          <View
-            style={styles.center}
-          >
-            <ActivityIndicator
-              size="large"
-              color={
-                colors.primary
-              }
-            />
+      {isLoadingLocation && !hasPages && (
+        <View style={styles.center}>
+          <ActivityIndicator size='large' color={colors.primary} />
 
-            <Text
-              style={
-                styles.mutedText
-              }
-            >
-              Standort wird ermittelt...
-            </Text>
-          </View>
-        )}
+          <Text style={styles.mutedText}>Standort wird ermittelt...</Text>
+        </View>
+      )}
 
       {/* KEIN STANDORT + KEINE FAVORITEN */}
-      {locationError &&
-        !hasPages && (
-          <View
-            style={
-              styles.errorContainer
-            }
+      {locationError && !hasPages && (
+        <View style={styles.errorContainer}>
+          <LocateFixed size={42} color={colors.error} />
+
+          <Text style={styles.errorTitle}>Standort nicht verfügbar</Text>
+
+          <Text style={styles.errorText}>{locationError}</Text>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.retryButton,
+
+              pressed && styles.retryButtonPressed,
+            ]}
+            onPress={handleRetryLocation}
           >
-            <LocateFixed
-              size={42}
-              color={
-                colors.error
-              }
-            />
+            <RefreshCw size={18} color={colors.primaryText} />
 
-            <Text
-              style={
-                styles.errorTitle
-              }
-            >
-              Standort nicht verfügbar
-            </Text>
-
-            <Text
-              style={
-                styles.errorText
-              }
-            >
-              {locationError}
-            </Text>
-
-            <Pressable
-              style={({
-                pressed,
-              }) => [
-                styles.retryButton,
-
-                pressed &&
-                  styles.retryButtonPressed,
-              ]}
-              onPress={
-                handleRetryLocation
-              }
-            >
-              <RefreshCw
-                size={18}
-                color={
-                  colors.primaryText
-                }
-              />
-
-              <Text
-                style={
-                  styles.retryButtonText
-                }
-              >
-                Erneut versuchen
-              </Text>
-            </Pressable>
-          </View>
-        )}
+            <Text style={styles.retryButtonText}>Erneut versuchen</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* STANDORT FEHLT, ABER FAVORITEN SIND DA */}
-      {locationError &&
-        hasPages && (
-          <View
-            style={
-              styles.locationWarning
-            }
-          >
-            <Text
-              style={
-                styles.locationWarningText
-              }
-            >
-              Standort aktuell nicht
-              verfügbar.
-            </Text>
+      {locationError && hasPages && (
+        <View style={styles.locationWarning}>
+          <Text style={styles.locationWarningText}>
+            Standort aktuell nicht verfügbar.
+          </Text>
 
-            <Pressable
-              onPress={
-                handleRetryLocation
-              }
-              hitSlop={8}
-            >
-              <RefreshCw
-                size={18}
-                color={
-                  colors.primary
-                }
-              />
-            </Pressable>
-          </View>
-        )}
+          <Pressable onPress={handleRetryLocation} hitSlop={8}>
+            <RefreshCw size={18} color={colors.primary} />
+          </Pressable>
+        </View>
+      )}
 
       {/* WETTER-SEITEN */}
       {hasPages && (
@@ -350,39 +206,22 @@ export default function HomeScreen() {
           data={weatherCities}
           horizontal
           pagingEnabled
-          showsHorizontalScrollIndicator={
-            false
-          }
-          keyExtractor={
-            (city) => city.id
-          }
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(city) => city.id}
           style={styles.pager}
           initialNumToRender={1}
           maxToRenderPerBatch={1}
           windowSize={3}
-          getItemLayout={(
-            _,
-            index
-          ) => ({
+          getItemLayout={(_, index) => ({
             length: width,
-            offset:
-              width * index,
+            offset: width * index,
             index,
           })}
-          onMomentumScrollEnd={(
-            event
-          ) => {
-            handlePageChanged(
-              event.nativeEvent
-                .contentOffset.x
-            );
+          onMomentumScrollEnd={(event) => {
+            handlePageChanged(event.nativeEvent.contentOffset.x);
           }}
-          renderItem={({
-            item: city,
-          }) => {
-            const isCurrentLocation =
-              city.id ===
-              'current-location';
+          renderItem={({ item: city }) => {
+            const isCurrentLocation = city.id === "current-location";
 
             return (
               <View
@@ -396,19 +235,10 @@ export default function HomeScreen() {
               >
                 <WeatherPage
                   city={city}
-                  isCurrentLocation={
-                    isCurrentLocation
-                  }
-                  isFavorite={
-                    isCurrentLocation
-                      ? false
-                      : isFavorite(
-                          city.id
-                        )
-                  }
-                  onToggleFavorite={
-                    handleToggleFavorite
-                  }
+                  isCurrentLocation={isCurrentLocation}
+                  isFavorite={isCurrentLocation ? false : isFavorite(city.id)}
+                  onToggleFavorite={handleToggleFavorite}
+                  useWeatherBackground
                 />
               </View>
             );
@@ -418,26 +248,13 @@ export default function HomeScreen() {
 
       {/* PAGINATION DOTS */}
       {weatherCities.length > 1 && (
-        <View
-          style={
-            styles.pagination
-          }
-          pointerEvents="none"
-        >
-          {weatherCities.map(
-            (city, index) => (
-              <View
-                key={city.id}
-                style={[
-                  styles.dot,
-
-                  index ===
-                    activeIndex &&
-                    styles.activeDot,
-                ]}
-              />
-            )
-          )}
+        <View style={styles.pagination} pointerEvents='none'>
+          {weatherCities.map((city, index) => (
+            <View
+              key={city.id}
+              style={[styles.dot, index === activeIndex && styles.activeDot]}
+            />
+          ))}
         </View>
       )}
 
@@ -446,35 +263,24 @@ export default function HomeScreen() {
         style={({ pressed }) => [
           styles.searchFab,
 
-          pressed &&
-            styles.searchFabPressed,
+          pressed && styles.searchFabPressed,
         ]}
-        onPress={() =>
-          router.push('/search')
-        }
-        accessibilityRole="button"
-        accessibilityLabel="Stadt suchen"
+        onPress={() => router.push("/search")}
+        accessibilityRole='button'
+        accessibilityLabel='Stadt suchen'
       >
-        <Search
-          size={27}
-          color={
-            colors.primaryText
-          }
-        />
+        <Search size={27} color={colors.primaryText} />
       </Pressable>
     </View>
   );
 }
 
-function createStyles(
-  colors: AppColors
-) {
+function createStyles(colors: AppColors) {
   return StyleSheet.create({
     container: {
       flex: 1,
 
-      backgroundColor:
-        colors.background,
+      backgroundColor: colors.background,
     },
 
     pager: {
@@ -483,21 +289,14 @@ function createStyles(
 
     page: {
       flex: 1,
-
-      paddingHorizontal: 20,
-
-      paddingTop: 24,
-
-      paddingBottom: 70,
     },
 
     center: {
       flex: 1,
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
-      alignItems: 'center',
+      alignItems: "center",
 
       gap: 12,
 
@@ -511,10 +310,9 @@ function createStyles(
     errorContainer: {
       flex: 1,
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
-      alignItems: 'center',
+      alignItems: "center",
 
       paddingHorizontal: 24,
 
@@ -524,7 +322,7 @@ function createStyles(
     errorTitle: {
       fontSize: 20,
 
-      fontWeight: 'bold',
+      fontWeight: "bold",
 
       color: colors.text,
     },
@@ -532,15 +330,15 @@ function createStyles(
     errorText: {
       color: colors.textMuted,
 
-      textAlign: 'center',
+      textAlign: "center",
 
       lineHeight: 21,
     },
 
     retryButton: {
-      flexDirection: 'row',
+      flexDirection: "row",
 
-      alignItems: 'center',
+      alignItems: "center",
 
       gap: 8,
 
@@ -552,8 +350,7 @@ function createStyles(
 
       borderRadius: 10,
 
-      backgroundColor:
-        colors.primary,
+      backgroundColor: colors.primary,
     },
 
     retryButtonPressed: {
@@ -561,14 +358,13 @@ function createStyles(
     },
 
     retryButtonText: {
-      color:
-        colors.primaryText,
+      color: colors.primaryText,
 
-      fontWeight: '600',
+      fontWeight: "600",
     },
 
     locationWarning: {
-      position: 'absolute',
+      position: "absolute",
 
       top: 18,
 
@@ -580,12 +376,11 @@ function createStyles(
 
       elevation: 5,
 
-      flexDirection: 'row',
+      flexDirection: "row",
 
-      alignItems: 'center',
+      alignItems: "center",
 
-      justifyContent:
-        'space-between',
+      justifyContent: "space-between",
 
       paddingHorizontal: 14,
 
@@ -593,13 +388,11 @@ function createStyles(
 
       borderWidth: 1,
 
-      borderColor:
-        colors.border,
+      borderColor: colors.border,
 
       borderRadius: 12,
 
-      backgroundColor:
-        colors.surface,
+      backgroundColor: colors.surface,
     },
 
     locationWarningText: {
@@ -607,7 +400,7 @@ function createStyles(
     },
 
     pagination: {
-      position: 'absolute',
+      position: "absolute",
 
       bottom: 30,
 
@@ -615,12 +408,11 @@ function createStyles(
 
       right: 0,
 
-      flexDirection: 'row',
+      flexDirection: "row",
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
-      alignItems: 'center',
+      alignItems: "center",
 
       gap: 7,
 
@@ -634,19 +426,17 @@ function createStyles(
 
       borderRadius: 4,
 
-      backgroundColor:
-        colors.border,
+      backgroundColor: colors.border,
     },
 
     activeDot: {
       width: 18,
 
-      backgroundColor:
-        colors.primary,
+      backgroundColor: colors.primary,
     },
 
     searchFab: {
-      position: 'absolute',
+      position: "absolute",
 
       left: 20,
 
@@ -658,13 +448,11 @@ function createStyles(
 
       borderRadius: 30,
 
-      alignItems: 'center',
+      alignItems: "center",
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
-      backgroundColor:
-        colors.primary,
+      backgroundColor: colors.primary,
 
       zIndex: 100,
 
