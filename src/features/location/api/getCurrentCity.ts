@@ -4,6 +4,10 @@ import { searchCities } from '../../city-search/api/searchCities';
 
 import type { City } from '../../city-search/model/city';
 
+import {
+  saveCurrentCity,
+} from '../storage/currentCityStorage';
+
 export async function getCurrentCity(): Promise<City> {
   const permission =
     await Location.requestForegroundPermissionsAsync();
@@ -41,13 +45,6 @@ export async function getCurrentCity(): Promise<City> {
   const address =
     addresses[0];
 
-  /*
-   * Expo gives us the city name
-   * provided by the operating system.
-   *
-   * That name may be localized,
-   * e.g. "Praha" instead of "Prague".
-   */
   const detectedCityName =
     address?.city ??
     address?.district ??
@@ -57,13 +54,6 @@ export async function getCurrentCity(): Promise<City> {
     | City
     | null = null;
 
-  /*
-   * Try to resolve the detected city
-   * through our Open-Meteo search.
-   *
-   * searchCities() requests
-   * language=en.
-   */
   if (detectedCityName) {
     try {
       const countryCode =
@@ -90,11 +80,6 @@ export async function getCurrentCity(): Promise<City> {
           );
       }
     } catch (error) {
-      /*
-       * Weather should still work even
-       * if translating the city name
-       * fails.
-       */
       console.warn(
         'Failed to resolve English city name:',
         error
@@ -102,13 +87,7 @@ export async function getCurrentCity(): Promise<City> {
     }
   }
 
-  return {
-    /*
-     * Keep this special ID.
-     *
-     * Home uses it to distinguish the
-     * current location from favorites.
-     */
+  const currentCity: City = {
     id: 'current-location',
 
     name:
@@ -126,18 +105,28 @@ export async function getCurrentCity(): Promise<City> {
       address?.region ??
       undefined,
 
-    /*
-     * Keep the real GPS coordinates,
-     * not the center coordinates
-     * returned by the city geocoder.
-     *
-     * This gives us weather for the
-     * user's actual position.
-     */
     latitude,
 
     longitude,
   };
+
+  /*
+   * Store the latest GPS location
+   * so the Android widget can use it
+   * even when the main UI is not open.
+   */
+  try {
+    await saveCurrentCity(
+      currentCity
+    );
+  } catch (error) {
+    console.warn(
+      'Failed to store current city for widget:',
+      error
+    );
+  }
+
+  return currentCity;
 }
 
 function findNearestCity(
