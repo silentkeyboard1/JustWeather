@@ -7,9 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "justweather",
     "userInterfaceStyle": "automatic",
+
     "ios": {
       "icon": "./assets/expo.icon"
     },
+
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -20,12 +22,15 @@
       "predictiveBackGestureEnabled": false,
       "package": "duckintheyard.justweather"
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       "expo-router",
+
       [
         "expo-splash-screen",
         {
@@ -34,17 +39,38 @@
           "imageWidth": 76
         }
       ],
+
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "JustWeather verwendet deinen Standort, um das aktuelle Wetter für deine Umgebung anzuzeigen."
+          "locationWhenInUsePermission": "JustWeather uses your location to show the current weather for your area."
+        }
+      ],
+
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "CurrentWeather",
+              "label": "JustWeather",
+              "description": "Current weather and upcoming hours",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 0
+            }
+          ]
         }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "router": {},
       "eas": {
