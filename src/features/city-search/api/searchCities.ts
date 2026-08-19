@@ -16,37 +16,50 @@ type OpenMeteoGeocodingResponse = {
 export async function searchCities(
   searchTerm: string
 ): Promise<City[]> {
-  const trimmedSearchTerm = searchTerm.trim();
+  const trimmedSearchTerm =
+    searchTerm.trim();
 
   if (!trimmedSearchTerm) {
     return [];
   }
 
   const response = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-      trimmedSearchTerm
-    )}&count=5&language=de&format=json`
+    `https://geocoding-api.open-meteo.com/v1/search` +
+      `?name=${encodeURIComponent(
+        trimmedSearchTerm
+      )}` +
+      `&count=5` +
+      `&language=en` +
+      `&format=json`
   );
 
   if (!response.ok) {
     throw new Error(
-      'Fehler beim Laden der Städte'
+      'Failed to load cities.'
     );
   }
 
   const data =
     (await response.json()) as OpenMeteoGeocodingResponse;
 
-  const cities: City[] = (
+  return (
     data.results ?? []
   ).map((result) => ({
     id: String(result.id),
-    name: result.name,
-    country: result.country ?? 'Unbekannt',
-    region: result.admin1,
-    latitude: result.latitude,
-    longitude: result.longitude,
-  }));
 
-  return cities;
+    name: result.name,
+
+    country:
+      result.country ??
+      'Unknown',
+
+    region:
+      result.admin1,
+
+    latitude:
+      result.latitude,
+
+    longitude:
+      result.longitude,
+  }));
 }

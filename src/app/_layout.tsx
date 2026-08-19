@@ -1,11 +1,5 @@
-import { Tabs } from 'expo-router';
-
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-
-import {
-  CloudSun,
-  Star,
-} from 'lucide-react-native';
 
 import { FavoritesProvider } from '../features/favorites/context/FavoritesContext';
 
@@ -20,69 +14,28 @@ export default function RootLayout() {
   return (
     <FavoritesProvider>
       <>
-        <Tabs
+        <Stack
           screenOptions={{
             headerShown: false,
 
-            tabBarActiveTintColor:
-              colors.primary,
-
-            tabBarInactiveTintColor:
-              colors.tabInactive,
-
-            tabBarStyle: {
+            contentStyle: {
               backgroundColor:
-                colors.surface,
-
-              borderTopColor:
-                colors.border,
-            },
-
-            tabBarLabelStyle: {
-              fontWeight: '600',
+                colors.background,
             },
           }}
         >
-          <Tabs.Screen
+          <Stack.Screen
             name="index"
-            options={{
-              title: 'Wetter',
-
-              tabBarIcon: ({
-                color,
-                size,
-              }) => (
-                <CloudSun
-                  color={color}
-                  size={size}
-                />
-              ),
-            }}
           />
 
-          <Tabs.Screen
-            name="favorites"
+          <Stack.Screen
+            name="search"
             options={{
-              title: 'Favoriten',
-
-              tabBarIcon: ({
-                color,
-                size,
-                focused,
-              }) => (
-                <Star
-                  color={color}
-                  size={size}
-                  fill={
-                    focused
-                      ? color
-                      : 'transparent'
-                  }
-                />
-              ),
+              animation:
+                'slide_from_bottom',
             }}
           />
-        </Tabs>
+        </Stack>
 
         <StatusBar
           style={

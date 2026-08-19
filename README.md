@@ -1,1 +1,2 @@
-Just Weather is a minimalistic Android App to enjoy your local weather data without distractions
+JustWeather is a minimalistic Android App to enjoy your local weather data without distractions.
+You can see the weather at you current location, search for cities and also add them to your favorites. You can swipe between your location and your favorites on the home screen.

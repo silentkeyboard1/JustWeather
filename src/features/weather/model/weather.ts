@@ -3,19 +3,29 @@ export type CurrentWeather = {
   apparentTemperature: number;
   humidity: number;
   windSpeed: number;
+
+  weatherCode: number;
+  isDay: boolean;
 };
 
 export type HourlyWeather = {
   time: string;
   temperature: number;
   precipitationProbability: number;
+
+  weatherCode: number;
+  isDay: boolean;
 };
 
 export type DailyWeather = {
   date: string;
+
   temperatureMax: number;
   temperatureMin: number;
+
   precipitationProbability: number;
+
+  weatherCode: number;
 };
 
 export type Weather = {

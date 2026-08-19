@@ -35,7 +35,7 @@ const lightColors: AppColors = {
 
   border: '#D5DCE1',
 
-  primary: '#527C96',
+  primary: '#302F2C',
 
   primaryText: '#F7FAFC',
 
@@ -59,13 +59,13 @@ const darkColors: AppColors = {
 
   textMuted: '#A6B2BB',
 
-  border: '#33404B',
+  border: '#101820',
 
-  primary: '#7FA9C2',
+  primary: '#F4F5F7',
 
   primaryText: '#101820',
 
-  icon: '#B2BEC7',
+  icon: '#F4F5F7',
 
   favorite: '#E1B85B',
 

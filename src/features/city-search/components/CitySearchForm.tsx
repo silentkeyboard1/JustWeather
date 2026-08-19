@@ -37,12 +37,12 @@ export function CitySearchForm({
   return (
     <View>
       <Text style={styles.subtitle}>
-        Suche nach einer Stadt
+        Search for a city
       </Text>
 
       <TextInput
         style={styles.input}
-        placeholder="z.B. Berlin"
+        placeholder="e.g. London"
         placeholderTextColor={
           colors.textMuted
         }
@@ -81,7 +81,7 @@ export function CitySearchForm({
             <Text
               style={styles.buttonText}
             >
-              Wetter suchen
+              search weather
             </Text>
           </View>
         )}

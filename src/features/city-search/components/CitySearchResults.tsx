@@ -1,109 +1,221 @@
 import {
+  FlatList,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
+import { MapPin } from 'lucide-react-native';
+
 import type { City } from '../model/city';
 
+import type { AppColors } from '../../../shared/theme/theme';
+
 import {
-  AppColors,
   useAppTheme,
 } from '../../../shared/theme/theme';
 
 type CitySearchResultsProps = {
   cities: City[];
-  onCitySelect: (city: City) => void;
+
+  onCitySelect: (
+    city: City
+  ) => void;
 };
 
 export function CitySearchResults({
   cities,
   onCitySelect,
 }: CitySearchResultsProps) {
-  const { colors } = useAppTheme();
+  const { colors } =
+    useAppTheme();
 
   const styles =
     createStyles(colors);
 
   return (
-    <View style={styles.results}>
-      {cities.map((city) => (
+    <FlatList
+      data={cities}
+      keyExtractor={
+        (city) => city.id
+      }
+      style={styles.list}
+      contentContainerStyle={
+        styles.listContent
+      }
+      showsVerticalScrollIndicator={
+        false
+      }
+      keyboardShouldPersistTaps="handled"
+      renderItem={({
+        item: city,
+      }) => (
         <Pressable
-          key={city.id}
           style={({ pressed }) => [
-            styles.resultItem,
+            styles.cityCard,
 
             pressed &&
-              styles.resultItemPressed,
+              styles.cityCardPressed,
           ]}
           onPress={() =>
             onCitySelect(city)
           }
+          accessibilityRole="button"
+          accessibilityLabel={`View weather for ${city.name}`}
         >
-          <Text
-            style={styles.resultName}
-          >
-            {city.name}
-          </Text>
-
-          <Text
+          <View
             style={
-              styles.resultLocation
+              styles.iconContainer
             }
           >
-            {city.region
-              ? `${city.region}, `
-              : ''}
+            <MapPin
+              size={22}
+              strokeWidth={2}
+              color={
+                colors.primary
+              }
+            />
+          </View>
 
-            {city.country}
-          </Text>
+          <View
+            style={
+              styles.cityInfo
+            }
+          >
+            <Text
+              numberOfLines={1}
+              style={
+                styles.cityName
+              }
+            >
+              {city.name}
+            </Text>
+
+            <Text
+              numberOfLines={1}
+              style={
+                styles.cityLocation
+              }
+            >
+              {formatLocation(
+                city
+              )}
+            </Text>
+          </View>
         </Pressable>
-      ))}
-    </View>
+      )}
+    />
   );
+}
+
+function formatLocation(
+  city: City
+) {
+  const parts: string[] =
+    [];
+
+  if (
+    city.region &&
+    city.region
+      .trim()
+      .toLowerCase() !==
+      city.name
+        .trim()
+        .toLowerCase()
+  ) {
+    parts.push(
+      city.region
+    );
+  }
+
+  if (city.country) {
+    parts.push(
+      city.country
+    );
+  }
+
+  return parts.join(', ');
 }
 
 function createStyles(
   colors: AppColors
 ) {
   return StyleSheet.create({
-    results: {
-      marginTop: 24,
-      gap: 12,
+    list: {
+      flex: 1,
     },
 
-    resultItem: {
-      padding: 16,
+    listContent: {
+      gap: 10,
+
+      paddingBottom: 24,
+    },
+
+    cityCard: {
+      flexDirection: 'row',
+
+      alignItems: 'center',
+
+      gap: 12,
+
+      minHeight: 72,
+
+      paddingHorizontal: 14,
+
+      paddingVertical: 12,
+
+      borderRadius: 14,
+
+      backgroundColor:
+        colors.surface,
 
       borderWidth: 1,
 
       borderColor:
         colors.border,
-
-      backgroundColor:
-        colors.surface,
-
-      borderRadius: 10,
     },
 
-    resultItemPressed: {
+    cityCardPressed: {
+      opacity: 0.65,
+    },
+
+    iconContainer: {
+      width: 42,
+
+      height: 42,
+
+      borderRadius: 21,
+
+      alignItems: 'center',
+
+      justifyContent:
+        'center',
+
       backgroundColor:
         colors.surfaceSecondary,
     },
 
-    resultName: {
-      fontSize: 18,
-
-      fontWeight: 'bold',
-
-      color: colors.text,
+    cityInfo: {
+      flex: 1,
     },
 
-    resultLocation: {
-      marginTop: 4,
+    cityName: {
+      fontSize: 17,
 
-      color: colors.textMuted,
+      fontWeight: '700',
+
+      color:
+        colors.text,
+    },
+
+    cityLocation: {
+      marginTop: 3,
+
+      fontSize: 14,
+
+      color:
+        colors.textMuted,
     },
   });
 }
