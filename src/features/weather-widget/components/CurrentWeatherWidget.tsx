@@ -18,6 +18,10 @@ import {
   getWeatherCondition,
 } from '../../weather/utils/getWeatherCondition';
 
+import type {
+  WeatherIconName,
+} from '../../weather/utils/getWeatherCondition';
+
 import {
   getRefreshIconSvg,
   getWidgetWeatherIconSvg,
@@ -46,6 +50,12 @@ export function CurrentWeatherWidget({
   const isDark =
     theme === 'dark';
 
+  /*
+   * Fully opaque base colors.
+   *
+   * There is no rgba / alpha transparency
+   * used for the widget background.
+   */
   const backgroundColor: ColorProp =
     isDark
       ? '#111820'
@@ -56,6 +66,16 @@ export function CurrentWeatherWidget({
       ? '#E6EDF2'
       : '#302F2C';
 
+  const secondaryTextColor: ColorProp =
+    isDark
+      ? '#A6B2BB'
+      : '#5F6264';
+
+  const dividerColor: ColorProp =
+    isDark
+      ? '#34414C'
+      : '#D5DCE1';
+
   const currentCondition =
     weather
       ? getWeatherCondition(
@@ -64,30 +84,20 @@ export function CurrentWeatherWidget({
         )
       : null;
 
-  /*
-   * getWeatherCondition currently defines
-   * its color as a normal string.
-   *
-   * The actual values are valid hex colors,
-   * so we tell TypeScript that this value
-   * satisfies the widget library's
-   * stricter ColorProp type.
-   */
   const weatherColor: ColorProp =
     currentCondition
       ? currentCondition.color as ColorProp
       : backgroundColor;
 
   /*
-   * Skip index 0 because that represents
-   * the current hour.
+   * Index 0 = current hour.
    *
-   * We want the NEXT four hours.
+   * 1 -> 6 gives us the NEXT FIVE hours.
    */
   const nextHours =
     weather?.hourly.slice(
       1,
-      5
+      6
     ) ?? [];
 
   return (
@@ -95,14 +105,33 @@ export function CurrentWeatherWidget({
       clickAction="OPEN_APP"
       accessibilityLabel="Open JustWeather"
       style={{
-        width: 'match_parent',
+        width:
+          'match_parent',
 
-        height: 'match_parent',
+        height:
+          'match_parent',
 
-        padding: 14,
+        padding: 16,
 
         borderRadius: 22,
 
+        /*
+         * Solid fallback background.
+         *
+         * This makes sure the widget
+         * itself is never transparent.
+         */
+        backgroundColor,
+
+        /*
+         * Fully opaque weather gradient.
+         *
+         * Weather color:
+         * top-left
+         *
+         * App background:
+         * bottom-right
+         */
         backgroundGradient: {
           from:
             weatherColor,
@@ -163,18 +192,18 @@ export function CurrentWeatherWidget({
           clickAction="REFRESH_WEATHER"
           accessibilityLabel="Refresh weather"
           style={{
-            width: 22,
+            width: 24,
 
-            height: 22,
+            height: 24,
 
             padding: 4,
           }}
         />
       </FlexWidget>
 
-      {/* NO WEATHER / ERROR */}
+      {/* CONTENT */}
 
-      {!weather && (
+      {!weather ? (
         <FlexWidget
           style={{
             width:
@@ -188,6 +217,8 @@ export function CurrentWeatherWidget({
 
             justifyContent:
               'center',
+
+            padding: 12,
           }}
         >
           <TextWidget
@@ -209,10 +240,19 @@ export function CurrentWeatherWidget({
             }}
           />
         </FlexWidget>
-      )}
+      ) : (
+        <FlexWidget
+          style={{
+            width:
+              'match_parent',
 
-      {weather && (
-        <>
+            flexDirection:
+              'column',
+
+            justifyContent:
+              'space-between',
+          }}
+        >
           {/* CURRENT WEATHER */}
 
           <FlexWidget
@@ -224,19 +264,25 @@ export function CurrentWeatherWidget({
                 'row',
 
               alignItems:
-                'center',
+                'flex-end',
 
               justifyContent:
                 'space-between',
+
+              marginTop: 8,
+
+              marginBottom: 10,
             }}
           >
+            {/* CURRENT TEMPERATURE */}
+
             <TextWidget
               text={`${Math.round(
                 weather.current
                   .temperature
               )}°`}
               style={{
-                fontSize: 40,
+                fontSize: 42,
 
                 fontWeight:
                   '800',
@@ -246,24 +292,73 @@ export function CurrentWeatherWidget({
               }}
             />
 
-            {currentCondition && (
-              <SvgWidget
-                svg={
-                  getWidgetWeatherIconSvg(
-                    currentCondition.icon,
-                    textColor
-                  )
-                }
-                style={{
-                  width: 38,
+            {/* CURRENT CONDITION */}
 
-                  height: 38,
+            {currentCondition ? (
+              <FlexWidget
+                style={{
+                  flexDirection:
+                    'row',
+
+                  alignItems:
+                    'center',
+
+                  marginBottom: 5,
                 }}
-              />
+              >
+                <SvgWidget
+                  svg={
+                    getWidgetWeatherIconSvg(
+                      currentCondition.icon,
+                      textColor
+                    )
+                  }
+                  style={{
+                    width: 30,
+
+                    height: 30,
+                  }}
+                />
+
+                <TextWidget
+                  text={
+                    currentCondition.label
+                  }
+                  style={{
+                    marginLeft: 6,
+
+                    fontSize: 11,
+
+                    fontWeight:
+                      '600',
+
+                    color:
+                      textColor,
+                  }}
+                />
+              </FlexWidget>
+            ) : (
+              <FlexWidget />
             )}
           </FlexWidget>
 
-          {/* NEXT HOURS */}
+          {/* DIVIDER */}
+
+          <FlexWidget
+            style={{
+              width:
+                'match_parent',
+
+              height: 1,
+
+              backgroundColor:
+                dividerColor,
+
+              marginBottom: 10,
+            }}
+          />
+
+          {/* NEXT 5 HOURS */}
 
           <FlexWidget
             style={{
@@ -306,15 +401,18 @@ export function CurrentWeatherWidget({
                     icon={
                       condition.icon
                     }
-                    color={
+                    textColor={
                       textColor
+                    }
+                    secondaryTextColor={
+                      secondaryTextColor
                     }
                   />
                 );
               }
             )}
           </FlexWidget>
-        </>
+        </FlexWidget>
       )}
     </FlexWidget>
   );
@@ -325,62 +423,69 @@ type HourForecastProps = {
 
   temperature: number;
 
-  icon:
-    ReturnType<
-      typeof getWeatherCondition
-    >['icon'];
+  icon: WeatherIconName;
 
-  /*
-   * Important:
-   * not `string`, but ColorProp.
-   */
-  color: ColorProp;
+  textColor: ColorProp;
+
+  secondaryTextColor: ColorProp;
 };
 
 function HourForecast({
   time,
   temperature,
   icon,
-  color,
+  textColor,
+  secondaryTextColor,
 }: HourForecastProps) {
   return (
     <FlexWidget
       style={{
-        width: 48,
+        /*
+         * Slightly narrower than before
+         * because we now display 5 hours.
+         */
+        width: 40,
 
         alignItems:
           'center',
       }}
     >
+      {/* TIME */}
+
       <TextWidget
         text={time}
         style={{
-          fontSize: 10,
+          fontSize: 9,
 
           fontWeight:
             '600',
 
-          color,
+          color:
+            secondaryTextColor,
         }}
       />
+
+      {/* WEATHER ICON */}
 
       <SvgWidget
         svg={
           getWidgetWeatherIconSvg(
             icon,
-            color
+            textColor
           )
         }
         style={{
-          width: 20,
+          width: 19,
 
-          height: 20,
+          height: 19,
 
-          marginTop: 3,
+          marginTop: 4,
 
-          marginBottom: 2,
+          marginBottom: 3,
         }}
       />
+
+      {/* TEMPERATURE */}
 
       <TextWidget
         text={`${temperature}°`}
@@ -390,7 +495,8 @@ function HourForecast({
           fontWeight:
             '700',
 
-          color,
+          color:
+            textColor,
         }}
       />
     </FlexWidget>
