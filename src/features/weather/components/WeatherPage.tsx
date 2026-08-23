@@ -182,12 +182,12 @@ export function WeatherPage({
         0.5,
       ]}
       start={{
-        x: 0,
+        x: 1,
         y: 0,
       }}
       end={{
-        x: 1,
-        y: 0.7,
+        x: 0,
+        y: 0.6,
       }}
       style={styles.container}
     >
