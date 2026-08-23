@@ -67,7 +67,7 @@ const darkColors: AppColors = {
 
   icon: '#F4F5F7',
 
-  favorite: '#E1B85B',
+  favorite: '#d6a738',
 
   error: '#DF8585',
 

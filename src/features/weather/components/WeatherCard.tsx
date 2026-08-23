@@ -11,6 +11,7 @@ import {
 
 import {
   Droplets,
+  LayoutGrid,
   Star,
   Thermometer,
   Wind,
@@ -20,17 +21,29 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import type { City } from '../../city-search/model/city';
+import type {
+  City,
+} from '../../city-search/model/city';
 
-import type { Weather } from '../model/weather';
+import {
+  useWidgetCity,
+} from '../../weather-widget/context/WidgetCityContext';
+
+import type {
+  Weather,
+} from '../model/weather';
 
 import {
   getWeatherCondition,
 } from '../utils/getWeatherCondition';
 
-import { WeatherIcon } from './WeatherIcon';
+import {
+  WeatherIcon,
+} from './WeatherIcon';
 
-import type { AppColors } from '../../../shared/theme/theme';
+import type {
+  AppColors,
+} from '../../../shared/theme/theme';
 
 import {
   useAppTheme,
@@ -70,7 +83,9 @@ export function WeatherCard({
   onRefresh,
   fullScreen = false,
 }: WeatherCardProps) {
-  const { width } =
+  const {
+    width,
+  } =
     useWindowDimensions();
 
   const insets =
@@ -79,7 +94,14 @@ export function WeatherCard({
   const {
     colors,
     isDark,
-  } = useAppTheme();
+  } =
+    useAppTheme();
+
+  const {
+    isWidgetCity,
+    selectWidgetCity,
+  } =
+    useWidgetCity();
 
   const currentCondition =
     weather
@@ -89,18 +111,10 @@ export function WeatherCard({
         )
       : null;
 
-  /*
-   * Light mode:
-   * all normal text uses #302F2C.
-   *
-   * Dark mode:
-   * keep the normal theme/weather-aware
-   * foreground color.
-   */
   const textColor =
-  isDark
-    ? colors.text
-    : '#302F2C';
+    isDark
+      ? colors.text
+      : '#302F2C';
 
   const styles =
     createStyles(
@@ -114,18 +128,25 @@ export function WeatherCard({
       148
     );
 
+  const selectedForWidget =
+    isWidgetCity(city);
+
   return (
     <ScrollView
-      style={styles.container}
+      style={
+        styles.container
+      }
       contentContainerStyle={[
         styles.content,
 
         fullScreen && {
           paddingTop:
-            insets.top + 14,
+            insets.top +
+            14,
 
           paddingBottom:
-            insets.bottom + 110,
+            insets.bottom +
+            110,
         },
       ]}
       showsVerticalScrollIndicator={
@@ -136,7 +157,9 @@ export function WeatherCard({
           refreshing={
             isRefreshing
           }
-          onRefresh={onRefresh}
+          onRefresh={
+            onRefresh
+          }
           colors={[
             colors.primary,
           ]}
@@ -154,16 +177,22 @@ export function WeatherCard({
         />
       }
     >
-      {/* CITY HEADER */}
+      {/* HEADER */}
 
       <View
-        style={styles.header}
+        style={
+          styles.header
+        }
       >
         <View
-          style={styles.cityInfo}
+          style={
+            styles.cityInfo
+          }
         >
           <Text
-            numberOfLines={1}
+            numberOfLines={
+              1
+            }
             style={
               styles.cityName
             }
@@ -172,7 +201,9 @@ export function WeatherCard({
           </Text>
 
           <Text
-            numberOfLines={1}
+            numberOfLines={
+              1
+            }
             style={
               styles.cityLocation
             }
@@ -185,42 +216,96 @@ export function WeatherCard({
           </Text>
         </View>
 
-        {showFavoriteButton &&
-          onToggleFavorite && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.favoriteButton,
+        <View
+          style={
+            styles.headerActions
+          }
+        >
+          {/* FAVORITE */}
 
-                pressed &&
-                  styles.pressed,
-              ]}
-              onPress={
-                onToggleFavorite
-              }
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel={
-                isFavorite
-                  ? 'Remove from favorites'
-                  : 'Add to favorites'
-              }
-            >
-              <Star
-                size={34}
-                strokeWidth={2}
-                color={
-                  isFavorite
-                    ? colors.favorite
-                    : textColor
+          {showFavoriteButton &&
+            onToggleFavorite && (
+              <Pressable
+                style={({
+                  pressed,
+                }) => [
+                  styles.headerButton,
+
+                  pressed &&
+                    styles.pressed,
+                ]}
+                onPress={
+                  onToggleFavorite
                 }
-                fill={
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={
                   isFavorite
-                    ? colors.favorite
-                    : 'transparent'
+                    ? 'Remove from favorites'
+                    : 'Add to favorites'
                 }
-              />
-            </Pressable>
-          )}
+              >
+                <Star
+                  size={31}
+                  strokeWidth={
+                    2
+                  }
+                  color={
+                    isFavorite
+                      ? colors.favorite
+                      : textColor
+                  }
+                  fill={
+                    isFavorite
+                      ? colors.favorite
+                      : 'transparent'
+                  }
+                />
+              </Pressable>
+            )}
+
+          {/* WIDGET CITY */}
+
+          <Pressable
+            style={({
+              pressed,
+            }) => [
+              styles.headerButton,
+
+              selectedForWidget &&
+                styles.widgetButtonSelected,
+
+              pressed &&
+                styles.pressed,
+            ]}
+            onPress={() =>
+              void selectWidgetCity(
+                city
+              )
+            }
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={
+              selectedForWidget
+                ? `${city.name} is used by the weather widget`
+                : `Use ${city.name} for the weather widget`
+            }
+          >
+            <LayoutGrid
+              size={28}
+              strokeWidth={
+                selectedForWidget
+                  ? 2.7
+                  : 2
+              }
+              color={
+                selectedForWidget
+                  ? colors.primary
+                  : textColor
+              }
+            />
+          </Pressable>
+        </View>
       </View>
 
       {/* INITIAL LOADING */}
@@ -306,8 +391,6 @@ export function WeatherCard({
               °
             </Text>
 
-            {/* WEATHER CONDITION */}
-
             <View
               style={
                 styles.conditionRow
@@ -322,7 +405,9 @@ export function WeatherCard({
                   color={
                     textColor
                   }
-                  strokeWidth={2}
+                  strokeWidth={
+                    2
+                  }
                 />
               )}
 
@@ -363,7 +448,9 @@ export function WeatherCard({
                 color={
                   textColor
                 }
-                strokeWidth={2}
+                strokeWidth={
+                  2
+                }
               />
 
               <View
@@ -403,7 +490,9 @@ export function WeatherCard({
                 color={
                   textColor
                 }
-                strokeWidth={2}
+                strokeWidth={
+                  2
+                }
               />
 
               <View
@@ -443,7 +532,9 @@ export function WeatherCard({
                 color={
                   textColor
                 }
-                strokeWidth={2}
+                strokeWidth={
+                  2
+                }
               />
 
               <View
@@ -460,7 +551,9 @@ export function WeatherCard({
                 </Text>
 
                 <Text
-                  numberOfLines={1}
+                  numberOfLines={
+                    1
+                  }
                   style={
                     styles.metricValue
                   }
@@ -475,10 +568,12 @@ export function WeatherCard({
             </View>
           </View>
 
-          {/* HOURLY FORECAST */}
+          {/* HOURLY */}
 
           <View
-            style={styles.section}
+            style={
+              styles.section
+            }
           >
             <Text
               style={
@@ -566,7 +661,7 @@ export function WeatherCard({
             </ScrollView>
           </View>
 
-          {/* 7 DAY FORECAST */}
+          {/* DAILY */}
 
           <View
             style={
@@ -613,7 +708,8 @@ export function WeatherCard({
                             styles.dailyDay
                           }
                         >
-                          {index === 0
+                          {index ===
+                          0
                             ? 'Today'
                             : formatDay(
                                 day.date
@@ -629,7 +725,9 @@ export function WeatherCard({
                             name={
                               condition.icon
                             }
-                            size={25}
+                            size={
+                              25
+                            }
                             color={
                               textColor
                             }
@@ -704,9 +802,13 @@ export function WeatherCard({
 function formatHour(
   time: string
 ) {
-  const hour = Number(
-    time.slice(11, 13)
-  );
+  const hour =
+    Number(
+      time.slice(
+        11,
+        13
+      )
+    );
 
   const suffix =
     hour >= 12
@@ -730,7 +832,8 @@ function formatDay(
   return parsedDate.toLocaleDateString(
     'en-US',
     {
-      weekday: 'short',
+      weekday:
+        'short',
     }
   );
 }
@@ -745,15 +848,20 @@ function createStyles(
     },
 
     content: {
-      paddingHorizontal: 20,
+      paddingHorizontal:
+        20,
+
       paddingTop: 30,
+
       paddingBottom: 24,
     },
 
     header: {
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       minHeight: 54,
     },
@@ -761,7 +869,7 @@ function createStyles(
     cityInfo: {
       flex: 1,
 
-      paddingRight: 12,
+      paddingRight: 8,
     },
 
     cityName: {
@@ -769,9 +877,11 @@ function createStyles(
 
       lineHeight: 32,
 
-      fontWeight: '800',
+      fontWeight:
+        '800',
 
-      letterSpacing: -0.7,
+      letterSpacing:
+        -0.7,
 
       color:
         textColor,
@@ -782,7 +892,8 @@ function createStyles(
 
       fontSize: 14,
 
-      fontWeight: '500',
+      fontWeight:
+        '500',
 
       color:
         textColor,
@@ -790,17 +901,33 @@ function createStyles(
       opacity: 0.72,
     },
 
-    favoriteButton: {
-      width: 52,
+    headerActions: {
+      flexDirection:
+        'row',
 
-      height: 52,
+      alignItems:
+        'center',
 
-      alignItems: 'center',
+      gap: 2,
+    },
+
+    headerButton: {
+      width: 48,
+
+      height: 48,
+
+      borderRadius: 24,
+
+      alignItems:
+        'center',
 
       justifyContent:
         'center',
+    },
 
-      borderRadius: 26,
+    widgetButtonSelected: {
+      backgroundColor:
+        colors.surfaceSecondary,
     },
 
     pressed: {
@@ -818,7 +945,8 @@ function createStyles(
 
       minHeight: 400,
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'center',
@@ -829,7 +957,8 @@ function createStyles(
     loadingText: {
       fontSize: 15,
 
-      fontWeight: '500',
+      fontWeight:
+        '500',
 
       color:
         textColor,
@@ -841,24 +970,28 @@ function createStyles(
       justifyContent:
         'center',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 8,
 
-      paddingHorizontal: 20,
+      paddingHorizontal:
+        20,
     },
 
     errorTitle: {
       fontSize: 20,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
       color:
         textColor,
     },
 
     errorText: {
-      textAlign: 'center',
+      textAlign:
+        'center',
 
       color:
         textColor,
@@ -867,7 +1000,8 @@ function createStyles(
     temperatureSection: {
       marginTop: 22,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
       alignItems:
         'flex-end',
@@ -877,20 +1011,25 @@ function createStyles(
     },
 
     temperature: {
-      fontWeight: '800',
+      fontWeight:
+        '800',
 
-      letterSpacing: -8,
+      letterSpacing:
+        -8,
 
-      textAlign: 'left',
+      textAlign:
+        'left',
 
       color:
         textColor,
     },
 
     conditionRow: {
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 7,
 
@@ -900,7 +1039,8 @@ function createStyles(
     conditionLabel: {
       fontSize: 16,
 
-      fontWeight: '600',
+      fontWeight:
+        '600',
 
       color:
         textColor,
@@ -924,7 +1064,8 @@ function createStyles(
     },
 
     metricsRow: {
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
       gap: 8,
     },
@@ -934,18 +1075,21 @@ function createStyles(
 
       minHeight: 58,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'center',
 
       gap: 7,
 
-      paddingHorizontal: 0,
+      paddingHorizontal:
+        8,
 
-      paddingVertical: 0,
+      paddingVertical: 9,
 
       borderRadius: 12,
 
@@ -967,7 +1111,8 @@ function createStyles(
 
       lineHeight: 13,
 
-      fontWeight: '600',
+      fontWeight:
+        '600',
 
       color:
         textColor,
@@ -982,7 +1127,8 @@ function createStyles(
 
       lineHeight: 16,
 
-      fontWeight: '800',
+      fontWeight:
+        '800',
 
       color:
         textColor,
@@ -997,7 +1143,8 @@ function createStyles(
 
       fontSize: 18,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
       color:
         textColor,
@@ -1014,14 +1161,17 @@ function createStyles(
 
       minHeight: 118,
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'space-between',
 
-      paddingHorizontal: 8,
+      paddingHorizontal:
+        8,
 
-      paddingVertical: 10,
+      paddingVertical:
+        10,
 
       borderRadius: 12,
 
@@ -1037,7 +1187,8 @@ function createStyles(
     hourlyTime: {
       fontSize: 13,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
       color:
         textColor,
@@ -1046,7 +1197,8 @@ function createStyles(
     hourlyTemperature: {
       fontSize: 19,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
       color:
         textColor,
@@ -1055,7 +1207,8 @@ function createStyles(
     hourlyRain: {
       fontSize: 11,
 
-      fontWeight: '600',
+      fontWeight:
+        '600',
 
       color:
         textColor,
@@ -1068,7 +1221,8 @@ function createStyles(
     },
 
     dailyContainer: {
-      overflow: 'hidden',
+      overflow:
+        'hidden',
 
       borderRadius: 14,
 
@@ -1084,11 +1238,14 @@ function createStyles(
     dailyRow: {
       minHeight: 68,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
-      paddingHorizontal: 14,
+      paddingHorizontal:
+        14,
     },
 
     dailyDay: {
@@ -1096,7 +1253,8 @@ function createStyles(
 
       fontSize: 15,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
       color:
         textColor,
@@ -1105,9 +1263,11 @@ function createStyles(
     dailyCondition: {
       width: 82,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 6,
     },
@@ -1124,7 +1284,8 @@ function createStyles(
     dailyTemperatures: {
       width: 72,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
       justifyContent:
         'flex-end',
@@ -1135,7 +1296,8 @@ function createStyles(
     dailyMax: {
       fontSize: 16,
 
-      fontWeight: '800',
+      fontWeight:
+        '800',
 
       color:
         textColor,
@@ -1144,7 +1306,8 @@ function createStyles(
     dailyMin: {
       fontSize: 16,
 
-      fontWeight: '600',
+      fontWeight:
+        '600',
 
       color:
         textColor,

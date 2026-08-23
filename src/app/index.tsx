@@ -6,7 +6,9 @@ import {
   useState,
 } from 'react';
 
-import { router } from 'expo-router';
+import {
+  router,
+} from 'expo-router';
 
 import {
   ActivityIndicator,
@@ -22,75 +24,107 @@ import {
   LocateFixed,
   RefreshCw,
   Search,
+  X,
 } from 'lucide-react-native';
 
 import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import type { City } from '../features/city-search/model/city';
+import type {
+  City,
+} from '../features/city-search/model/city';
 
-import { useFavorites } from '../features/favorites/context/FavoritesContext';
+import {
+  useFavorites,
+} from '../features/favorites/context/FavoritesContext';
 
-import { getCurrentCity } from '../features/location/api/getCurrentCity';
+import {
+  getCurrentCity,
+} from '../features/location/api/getCurrentCity';
 
-import { WeatherPage } from '../features/weather/components/WeatherPage';
+import {
+  WeatherPage,
+} from '../features/weather/components/WeatherPage';
 
-import type { AppColors } from '../shared/theme/theme';
+import type {
+  AppColors,
+} from '../shared/theme/theme';
 
-import { useAppTheme } from '../shared/theme/theme';
+import {
+  useAppTheme,
+} from '../shared/theme/theme';
 
 export default function HomeScreen() {
-  const { width } =
+  const {
+    width,
+  } =
     useWindowDimensions();
 
   const insets =
     useSafeAreaInsets();
 
-  const { colors } =
+  const {
+    colors,
+  } =
     useAppTheme();
 
   const styles =
-    createStyles(colors);
+    createStyles(
+      colors
+    );
 
   const pagerRef =
-    useRef<FlatList<City>>(
-      null
-    );
+    useRef<
+      FlatList<City>
+    >(null);
 
   const {
     favoriteCities,
     isFavorite,
     toggleFavorite,
-  } = useFavorites();
+  } =
+    useFavorites();
 
   const [
     currentCity,
     setCurrentCity,
-  ] = useState<City | null>(
-    null
-  );
+  ] =
+    useState<
+      City | null
+    >(null);
 
   const [
     isLoadingLocation,
     setIsLoadingLocation,
-  ] = useState(true);
+  ] =
+    useState(true);
 
   const [
     locationError,
     setLocationError,
-  ] = useState<
-    string | null
-  >(null);
+  ] =
+    useState<
+      string | null
+    >(null);
+
+  const [
+    isLocationWarningDismissed,
+    setIsLocationWarningDismissed,
+  ] =
+    useState(false);
 
   const [
     activeIndex,
     setActiveIndex,
-  ] = useState(0);
+  ] =
+    useState(0);
 
   const weatherCities =
     useMemo(() => {
-      if (currentCity) {
+      if (
+        currentCity
+      ) {
         return [
           currentCity,
           ...favoriteCities,
@@ -104,47 +138,59 @@ export default function HomeScreen() {
     ]);
 
   const loadCurrentLocation =
-    useCallback(async () => {
-      setIsLoadingLocation(
-        true
-      );
-
-      setLocationError(null);
-
-      try {
-        const city =
-          await getCurrentCity();
-
-        setCurrentCity(city);
-      } catch (error) {
-        console.error(
-          'Failed to load location:',
-          error
+    useCallback(
+      async () => {
+        setIsLoadingLocation(
+          true
         );
 
-        if (
-          error instanceof Error &&
-          error.message ===
-            'LOCATION_PERMISSION_DENIED'
-        ) {
-          setLocationError(
-            'Location permission is required to show the weather for your current location.'
+        setLocationError(
+          null
+        );
+
+        try {
+          const city =
+            await getCurrentCity();
+
+          setCurrentCity(
+            city
           );
-        } else {
-          setLocationError(
-            'Your current location could not be determined.'
+        } catch (
+          error
+        ) {
+          console.error(
+            'Failed to load location:',
+            error
+          );
+
+          if (
+            error instanceof
+              Error &&
+            error.message ===
+              'LOCATION_PERMISSION_DENIED'
+          ) {
+            setLocationError(
+              'Location permission is required to show the weather for your current location.'
+            );
+          } else {
+            setLocationError(
+              'Your current location could not be determined.'
+            );
+          }
+        } finally {
+          setIsLoadingLocation(
+            false
           );
         }
-      } finally {
-        setIsLoadingLocation(
-          false
-        );
-      }
-    }, []);
+      },
+      []
+    );
 
   useEffect(() => {
     void loadCurrentLocation();
-  }, [loadCurrentLocation]);
+  }, [
+    loadCurrentLocation,
+  ]);
 
   useEffect(() => {
     if (
@@ -156,10 +202,14 @@ export default function HomeScreen() {
 
     setActiveIndex(0);
 
-    pagerRef.current?.scrollToIndex({
-      index: 0,
-      animated: true,
-    });
+    pagerRef.current?.scrollToIndex(
+      {
+        index: 0,
+
+        animated:
+          true,
+      }
+    );
   }, [
     activeIndex,
     weatherCities.length,
@@ -176,20 +226,30 @@ export default function HomeScreen() {
     }
 
     const wasFavorite =
-      isFavorite(city.id);
+      isFavorite(
+        city.id
+      );
 
-    await toggleFavorite(city);
+    await toggleFavorite(
+      city
+    );
 
     if (
       wasFavorite &&
       currentCity
     ) {
-      setActiveIndex(0);
+      setActiveIndex(
+        0
+      );
 
-      pagerRef.current?.scrollToIndex({
-        index: 0,
-        animated: true,
-      });
+      pagerRef.current?.scrollToIndex(
+        {
+          index: 0,
+
+          animated:
+            true,
+        }
+      );
     }
   }
 
@@ -198,10 +258,13 @@ export default function HomeScreen() {
   ) {
     const newIndex =
       Math.round(
-        offsetX / width
+        offsetX /
+          width
       );
 
-    setActiveIndex(newIndex);
+    setActiveIndex(
+      newIndex
+    );
   }
 
   function handleRetryLocation() {
@@ -209,10 +272,15 @@ export default function HomeScreen() {
   }
 
   const hasPages =
-    weatherCities.length > 0;
+    weatherCities.length >
+    0;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={
+        styles.container
+      }
+    >
       {/* LOCATION LOADING */}
 
       {isLoadingLocation &&
@@ -247,7 +315,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-      {/* LOCATION ERROR */}
+      {/* LOCATION ERROR WITH NO OTHER PAGES */}
 
       {locationError &&
         !hasPages && (
@@ -284,11 +352,15 @@ export default function HomeScreen() {
                 styles.errorText
               }
             >
-              {locationError}
+              {
+                locationError
+              }
             </Text>
 
             <Pressable
-              style={({ pressed }) => [
+              style={({
+                pressed,
+              }) => [
                 styles.retryButton,
 
                 pressed &&
@@ -316,10 +388,11 @@ export default function HomeScreen() {
           </View>
         )}
 
-      {/* LOCATION WARNING */}
+      {/* DISMISSIBLE LOCATION WARNING */}
 
       {locationError &&
-        hasPages && (
+        hasPages &&
+        !isLocationWarningDismissed && (
           <View
             style={[
               styles.locationWarning,
@@ -331,56 +404,91 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <Text
+            <View
               style={
-                styles.locationWarningText
+                styles.locationWarningContent
               }
             >
-              Current location unavailable.
-            </Text>
-
-            <Pressable
-              onPress={
-                handleRetryLocation
-              }
-              hitSlop={8}
-            >
-              <RefreshCw
+              <LocateFixed
                 size={18}
                 color={
-                  colors.primary
+                  colors.error
+                }
+              />
+
+              <Text
+                style={
+                  styles.locationWarningText
+                }
+              >
+                Current location unavailable.
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() =>
+                setIsLocationWarningDismissed(
+                  true
+                )
+              }
+              hitSlop={
+                10
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss location warning"
+            >
+              <X
+                size={20}
+                color={
+                  colors.textMuted
                 }
               />
             </Pressable>
           </View>
         )}
 
-      {/* WEATHER PAGER */}
+      {/* WEATHER */}
 
       {hasPages && (
         <FlatList
-          ref={pagerRef}
-          data={weatherCities}
+          ref={
+            pagerRef
+          }
+          data={
+            weatherCities
+          }
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={
             false
           }
-          keyExtractor={
-            (city) => city.id
+          keyExtractor={(
+            city
+          ) =>
+            city.id
           }
-          style={styles.pager}
-          initialNumToRender={1}
-          maxToRenderPerBatch={1}
-          windowSize={3}
+          style={
+            styles.pager
+          }
+          initialNumToRender={
+            1
+          }
+          maxToRenderPerBatch={
+            1
+          }
+          windowSize={
+            3
+          }
           getItemLayout={(
             _,
             index
           ) => ({
-            length: width,
+            length:
+              width,
 
             offset:
-              width * index,
+              width *
+              index,
 
             index,
           })}
@@ -388,12 +496,15 @@ export default function HomeScreen() {
             event
           ) => {
             handlePageChanged(
-              event.nativeEvent
-                .contentOffset.x
+              event
+                .nativeEvent
+                .contentOffset
+                .x
             );
           }}
           renderItem={({
-            item: city,
+            item:
+              city,
           }) => {
             const isCurrentLocation =
               city.id ===
@@ -410,7 +521,9 @@ export default function HomeScreen() {
                 ]}
               >
                 <WeatherPage
-                  city={city}
+                  city={
+                    city
+                  }
                   isCurrentLocation={
                     isCurrentLocation
                   }
@@ -449,9 +562,14 @@ export default function HomeScreen() {
           pointerEvents="none"
         >
           {weatherCities.map(
-            (city, index) => (
+            (
+              city,
+              index
+            ) => (
               <View
-                key={city.id}
+                key={
+                  city.id
+                }
                 style={[
                   styles.dot,
 
@@ -465,18 +583,15 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* FLOATING SEARCH BUTTON */}
+      {/* SEARCH */}
 
       <Pressable
-        style={({ pressed }) => [
+        style={({
+          pressed,
+        }) => [
           styles.searchFab,
 
           {
-            /*
-             * Dynamically stay above
-             * Android gesture navigation,
-             * iPhone home indicator, etc.
-             */
             bottom:
               insets.bottom +
               18,
@@ -486,14 +601,18 @@ export default function HomeScreen() {
             styles.searchFabPressed,
         ]}
         onPress={() =>
-          router.push('/search')
+          router.push(
+            '/search'
+          )
         }
         accessibilityRole="button"
         accessibilityLabel="Search for a city"
       >
         <Search
           size={27}
-          strokeWidth={2.2}
+          strokeWidth={
+            2.2
+          }
           color={
             colors.primaryText
           }
@@ -528,11 +647,13 @@ function createStyles(
       justifyContent:
         'center',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 12,
 
-      paddingHorizontal: 24,
+      paddingHorizontal:
+        24,
     },
 
     mutedText: {
@@ -546,9 +667,11 @@ function createStyles(
       justifyContent:
         'center',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
-      paddingHorizontal: 24,
+      paddingHorizontal:
+        24,
 
       gap: 12,
     },
@@ -556,32 +679,39 @@ function createStyles(
     errorTitle: {
       fontSize: 20,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
-      color: colors.text,
+      color:
+        colors.text,
     },
 
     errorText: {
       color:
         colors.textMuted,
 
-      textAlign: 'center',
+      textAlign:
+        'center',
 
       lineHeight: 21,
     },
 
     retryButton: {
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 8,
 
       marginTop: 8,
 
-      paddingHorizontal: 18,
+      paddingHorizontal:
+        18,
 
-      paddingVertical: 12,
+      paddingVertical:
+        12,
 
       borderRadius: 12,
 
@@ -597,11 +727,13 @@ function createStyles(
       color:
         colors.primaryText,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
     },
 
     locationWarning: {
-      position: 'absolute',
+      position:
+        'absolute',
 
       left: 20,
 
@@ -611,16 +743,20 @@ function createStyles(
 
       elevation: 8,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'space-between',
 
-      paddingHorizontal: 14,
+      paddingHorizontal:
+        14,
 
-      paddingVertical: 10,
+      paddingVertical:
+        10,
 
       borderWidth: 1,
 
@@ -633,24 +769,43 @@ function createStyles(
         colors.surface,
     },
 
+    locationWarningContent: {
+      flex: 1,
+
+      flexDirection:
+        'row',
+
+      alignItems:
+        'center',
+
+      gap: 8,
+
+      paddingRight: 12,
+    },
+
     locationWarningText: {
+      flex: 1,
+
       color:
         colors.textMuted,
     },
 
     pagination: {
-      position: 'absolute',
+      position:
+        'absolute',
 
       left: 0,
 
       right: 0,
 
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
       justifyContent:
         'center',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 7,
 
@@ -676,7 +831,8 @@ function createStyles(
     },
 
     searchFab: {
-      position: 'absolute',
+      position:
+        'absolute',
 
       left: 20,
 
@@ -686,7 +842,8 @@ function createStyles(
 
       borderRadius: 30,
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'center',
@@ -698,6 +855,25 @@ function createStyles(
 
       borderColor:
         colors.border,
+
+      shadowColor:
+        colors.text,
+
+      shadowOffset: {
+        width: 0,
+
+        height: 5,
+      },
+
+      shadowOpacity:
+        0.2,
+
+      shadowRadius:
+        9,
+
+      elevation: 12,
+
+      zIndex: 100,
     },
 
     searchFabPressed: {
@@ -705,7 +881,8 @@ function createStyles(
 
       transform: [
         {
-          scale: 0.94,
+          scale:
+            0.94,
         },
       ],
     },
