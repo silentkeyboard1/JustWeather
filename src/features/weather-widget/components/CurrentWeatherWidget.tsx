@@ -127,10 +127,10 @@ export function CurrentWeatherWidget({
          * Fully opaque weather gradient.
          *
          * Weather color:
-         * top-left
+         * top-right
          *
          * App background:
-         * bottom-right
+         * bottom-left
          */
         backgroundGradient: {
           from:
@@ -140,7 +140,7 @@ export function CurrentWeatherWidget({
             backgroundColor,
 
           orientation:
-            'TL_BR',
+            'TR_BL',
         },
 
         flexDirection:
