@@ -1,43 +1,30 @@
-'use no memo';
+"use no memo";
 
 import {
   FlexWidget,
   SvgWidget,
   TextWidget,
-} from 'react-native-android-widget';
+} from "react-native-android-widget";
 
-import type {
-  ColorProp,
-} from 'react-native-android-widget';
+import type { ColorProp } from "react-native-android-widget";
 
-import type { City } from '../../city-search/model/city';
+import type { City } from "../../city-search/model/city";
+import type { Weather } from "../../weather/model/weather";
 
-import type { Weather } from '../../weather/model/weather';
-
-import {
-  getWeatherCondition,
-} from '../../weather/utils/getWeatherCondition';
-
-import type {
-  WeatherIconName,
-} from '../../weather/utils/getWeatherCondition';
+import { getWeatherCondition } from "../../weather/utils/getWeatherCondition";
+import type { WeatherIconName } from "../../weather/utils/getWeatherCondition";
 
 import {
   getRefreshIconSvg,
   getWidgetWeatherIconSvg,
-} from '../utils/getWidgetWeatherIconSvg';
+} from "../utils/getWidgetWeatherIconSvg";
 
-type WidgetTheme =
-  | 'light'
-  | 'dark';
+type WidgetTheme = "light" | "dark";
 
 type CurrentWeatherWidgetProps = {
   theme: WidgetTheme;
-
   city: City | null;
-
   weather: Weather | null;
-
   message?: string;
 };
 
@@ -47,293 +34,182 @@ export function CurrentWeatherWidget({
   weather,
   message,
 }: CurrentWeatherWidgetProps) {
-  const isDark =
-    theme === 'dark';
+  const isDark = theme === "dark";
 
-  /*
-   * Fully opaque base colors.
+  /**
+   * Solid widget background.
    *
-   * There is no rgba / alpha transparency
-   * used for the widget background.
+   * Dark mode:
+   * dark gray
+   *
+   * Light mode:
+   * light gray
    */
-  const backgroundColor: ColorProp =
-    isDark
-      ? '#111820'
-      : '#F4F5F7';
+  const backgroundColor: ColorProp = isDark
+    ? "#202124"
+    : "#F1F3F4";
 
-  const textColor: ColorProp =
-    isDark
-      ? '#E6EDF2'
-      : '#302F2C';
+  const textColor: ColorProp = isDark
+    ? "#F1F3F4"
+    : "#202124";
 
-  const secondaryTextColor: ColorProp =
-    isDark
-      ? '#A6B2BB'
-      : '#5F6264';
+  const secondaryTextColor: ColorProp = isDark
+    ? "#BDC1C6"
+    : "#5F6368";
 
-  const dividerColor: ColorProp =
-    isDark
-      ? '#34414C'
-      : '#D5DCE1';
+  /**
+   * Slightly different gray for the
+   * hourly forecast pill.
+   */
+  const hourlyBackgroundColor: ColorProp = isDark
+    ? "#2B2C2F"
+    : "#E3E5E8";
 
-  const currentCondition =
-    weather
-      ? getWeatherCondition(
-          weather.current.weatherCode,
-          weather.current.isDay
-        )
-      : null;
+  const currentCondition = weather
+    ? getWeatherCondition(
+        weather.current.weatherCode,
+        weather.current.isDay,
+      )
+    : null;
 
-  const weatherColor: ColorProp =
-    currentCondition
-      ? currentCondition.color as ColorProp
-      : backgroundColor;
-
-  /*
+  /**
    * Index 0 = current hour.
    *
-   * 1 -> 6 gives us the NEXT FIVE hours.
+   * 1 -> 6 gives us the next five hours.
    */
   const nextHours =
-    weather?.hourly.slice(
-      1,
-      6
-    ) ?? [];
+    weather?.hourly.slice(1, 6) ?? [];
 
   return (
     <FlexWidget
       clickAction="OPEN_APP"
       accessibilityLabel="Open JustWeather"
       style={{
-        width:
-          'match_parent',
-
-        height:
-          'match_parent',
-
+        width: "match_parent",
+        height: "match_parent",
         padding: 16,
-
         borderRadius: 22,
 
-        /*
-         * Solid fallback background.
-         *
-         * This makes sure the widget
-         * itself is never transparent.
-         */
+        // Solid background only.
+        // No gradient.
         backgroundColor,
 
-        /*
-         * Fully opaque weather gradient.
-         *
-         * Weather color:
-         * top-right
-         *
-         * App background:
-         * bottom-left
-         */
-        backgroundGradient: {
-          from:
-            weatherColor,
-
-          to:
-            backgroundColor,
-
-          orientation:
-            'TR_BL',
-        },
-
-        flexDirection:
-          'column',
-
-        justifyContent:
-          'space-between',
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
       {/* HEADER */}
-
       <FlexWidget
         style={{
-          width:
-            'match_parent',
-
-          flexDirection:
-            'row',
-
-          alignItems:
-            'center',
-
-          justifyContent:
-            'space-between',
+          width: "match_parent",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
         <TextWidget
-          text={
-            city?.name ??
-            'JustWeather'
-          }
+          text={city?.name ?? "JustWeather"}
           style={{
             fontSize: 16,
-
-            fontWeight:
-              '700',
-
-            color:
-              textColor,
+            fontWeight: "700",
+            color: textColor,
           }}
         />
 
         <SvgWidget
-          svg={
-            getRefreshIconSvg(
-              textColor
-            )
-          }
+          svg={getRefreshIconSvg(textColor)}
           clickAction="REFRESH_WEATHER"
           accessibilityLabel="Refresh weather"
           style={{
             width: 24,
-
             height: 24,
-
             padding: 4,
           }}
         />
       </FlexWidget>
 
       {/* CONTENT */}
-
       {!weather ? (
         <FlexWidget
           style={{
-            width:
-              'match_parent',
-
-            height:
-              'match_parent',
-
-            alignItems:
-              'center',
-
-            justifyContent:
-              'center',
-
+            width: "match_parent",
+            height: "match_parent",
+            alignItems: "center",
+            justifyContent: "center",
             padding: 12,
           }}
         >
           <TextWidget
             text={
               message ??
-              'Open JustWeather once to set your location.'
+              "Open JustWeather once to set your location."
             }
             style={{
               fontSize: 13,
-
-              fontWeight:
-                '600',
-
-              color:
-                textColor,
-
-              textAlign:
-                'center',
+              fontWeight: "600",
+              color: textColor,
+              textAlign: "center",
             }}
           />
         </FlexWidget>
       ) : (
         <FlexWidget
           style={{
-            width:
-              'match_parent',
-
-            flexDirection:
-              'column',
-
-            justifyContent:
-              'space-between',
+            width: "match_parent",
+            flexDirection: "column",
+            justifyContent: "space-between",
           }}
         >
           {/* CURRENT WEATHER */}
-
           <FlexWidget
             style={{
-              width:
-                'match_parent',
-
-              flexDirection:
-                'row',
-
-              alignItems:
-                'flex-end',
-
-              justifyContent:
-                'space-between',
-
+              width: "match_parent",
+              flexDirection: "row",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
               marginTop: 8,
-
               marginBottom: 10,
             }}
           >
             {/* CURRENT TEMPERATURE */}
-
             <TextWidget
               text={`${Math.round(
-                weather.current
-                  .temperature
+                weather.current.temperature,
               )}°`}
               style={{
                 fontSize: 42,
-
-                fontWeight:
-                  '800',
-
-                color:
-                  textColor,
+                fontWeight: "800",
+                color: textColor,
               }}
             />
 
             {/* CURRENT CONDITION */}
-
             {currentCondition ? (
               <FlexWidget
                 style={{
-                  flexDirection:
-                    'row',
-
-                  alignItems:
-                    'center',
-
+                  flexDirection: "row",
+                  alignItems: "center",
                   marginBottom: 5,
                 }}
               >
                 <SvgWidget
-                  svg={
-                    getWidgetWeatherIconSvg(
-                      currentCondition.icon,
-                      textColor
-                    )
-                  }
+                  svg={getWidgetWeatherIconSvg(
+                    currentCondition.icon,
+                    textColor,
+                  )}
                   style={{
                     width: 30,
-
                     height: 30,
                   }}
                 />
 
                 <TextWidget
-                  text={
-                    currentCondition.label
-                  }
+                  text={currentCondition.label}
                   style={{
                     marginLeft: 6,
-
                     fontSize: 11,
-
-                    fontWeight:
-                      '600',
-
-                    color:
-                      textColor,
+                    fontWeight: "600",
+                    color: textColor,
                   }}
                 />
               </FlexWidget>
@@ -342,75 +218,45 @@ export function CurrentWeatherWidget({
             )}
           </FlexWidget>
 
-          {/* DIVIDER */}
-
-          <FlexWidget
-            style={{
-              width:
-                'match_parent',
-
-              height: 1,
-
-              backgroundColor:
-                dividerColor,
-
-              marginBottom: 10,
-            }}
-          />
-
           {/* NEXT 5 HOURS */}
-
           <FlexWidget
             style={{
-              width:
-                'match_parent',
+              width: "match_parent",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: 8,
 
-              flexDirection:
-                'row',
+              // Theme-aware solid pill
+              backgroundColor: hourlyBackgroundColor,
+              borderRadius: 20,
 
-              alignItems:
-                'center',
-
-              justifyContent:
-                'space-between',
+              paddingHorizontal: 12,
+              paddingVertical: 8,
             }}
           >
-            {nextHours.map(
-              (hour) => {
-                const condition =
-                  getWeatherCondition(
-                    hour.weatherCode,
-                    hour.isDay
-                  );
-
-                return (
-                  <HourForecast
-                    key={
-                      hour.time
-                    }
-                    time={
-                      formatHour(
-                        hour.time
-                      )
-                    }
-                    temperature={
-                      Math.round(
-                        hour.temperature
-                      )
-                    }
-                    icon={
-                      condition.icon
-                    }
-                    textColor={
-                      textColor
-                    }
-                    secondaryTextColor={
-                      secondaryTextColor
-                    }
-                  />
+            {nextHours.map((hour) => {
+              const condition =
+                getWeatherCondition(
+                  hour.weatherCode,
+                  hour.isDay,
                 );
-              }
-            )}
+
+              return (
+                <HourForecast
+                  key={hour.time}
+                  time={formatHour(hour.time)}
+                  temperature={Math.round(
+                    hour.temperature,
+                  )}
+                  icon={condition.icon}
+                  textColor={textColor}
+                  secondaryTextColor={
+                    secondaryTextColor
+                  }
+                />
+              );
+            })}
           </FlexWidget>
         </FlexWidget>
       )}
@@ -420,13 +266,9 @@ export function CurrentWeatherWidget({
 
 type HourForecastProps = {
   time: string;
-
   temperature: number;
-
   icon: WeatherIconName;
-
   textColor: ColorProp;
-
   secondaryTextColor: ColorProp;
 };
 
@@ -440,84 +282,54 @@ function HourForecast({
   return (
     <FlexWidget
       style={{
-        /*
-         * Slightly narrower than before
-         * because we now display 5 hours.
-         */
         width: 40,
-
-        alignItems:
-          'center',
+        alignItems: "center",
       }}
     >
       {/* TIME */}
-
       <TextWidget
         text={time}
         style={{
           fontSize: 9,
-
-          fontWeight:
-            '600',
-
-          color:
-            secondaryTextColor,
+          fontWeight: "600",
+          color: secondaryTextColor,
         }}
       />
 
       {/* WEATHER ICON */}
-
       <SvgWidget
-        svg={
-          getWidgetWeatherIconSvg(
-            icon,
-            textColor
-          )
-        }
+        svg={getWidgetWeatherIconSvg(
+          icon,
+          textColor,
+        )}
         style={{
           width: 19,
-
           height: 19,
-
           marginTop: 4,
-
           marginBottom: 3,
         }}
       />
 
       {/* TEMPERATURE */}
-
       <TextWidget
         text={`${temperature}°`}
         style={{
           fontSize: 13,
-
-          fontWeight:
-            '700',
-
-          color:
-            textColor,
+          fontWeight: "700",
+          color: textColor,
         }}
       />
     </FlexWidget>
   );
 }
 
-function formatHour(
-  time: string
-) {
-  const hour =
-    Number(
-      time.slice(
-        11,
-        13
-      )
-    );
+function formatHour(time: string) {
+  const hour = Number(
+    time.slice(11, 13),
+  );
 
   const suffix =
-    hour >= 12
-      ? 'pm'
-      : 'am';
+    hour >= 12 ? "pm" : "am";
 
   const displayHour =
     hour % 12 || 12;
