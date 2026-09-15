@@ -41,7 +41,7 @@ const lightColors: AppColors = {
 
   icon: '#53636E',
 
-  favorite: '#F7FAFC',
+  favorite: '#302F2C',
 
   error: '#B85C5C',
 
