@@ -2,6 +2,4 @@
 
 📍⭐️ You can see the weather at you current location, search for cities and also add them to your favorites. You can swipe between your location and your favorites on the home screen.  
 
-🪟 Use a widget to stay up to date on your homescreen. The widget uses the last stored location from your app or a selected favorite.  
-
-🔋 To save battery, it doesn't use background access of your location. But that also means, you need to tap the refresh button on the widget to get live data.
+🪟 Use a widget to stay up to date on your homescreen. The widget refreshes one time every hour, so you can stay up to date. Alternatively you can use the refresh button to get real time data.
