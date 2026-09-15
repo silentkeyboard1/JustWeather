@@ -9,21 +9,25 @@ import {
   View,
 } from 'react-native';
 
+import type {
+  City,
+} from '../../city-search/model/city';
+
 import {
-  LinearGradient,
-} from 'expo-linear-gradient';
+  getWeather,
+} from '../api/getWeather';
 
-import type { City } from '../../city-search/model/city';
+import type {
+  Weather,
+} from '../model/weather';
 
-import { useAppTheme } from '../../../shared/theme/theme';
+import {
+  WeatherCard,
+} from './WeatherCard';
 
-import { getWeather } from '../api/getWeather';
-
-import { getWeatherCondition } from '../utils/getWeatherCondition';
-
-import type { Weather } from '../model/weather';
-
-import { WeatherCard } from './WeatherCard';
+import {
+  useAppTheme,
+} from '../../../shared/theme/theme';
 
 type WeatherPageProps = {
   city: City;
@@ -32,10 +36,18 @@ type WeatherPageProps = {
 
   isFavorite: boolean;
 
-  onToggleFavorite: (
+  onToggleFavorite?: (
     city: City
-  ) => void;
+  ) => void | Promise<void>;
 
+  /*
+   * We keep this prop so index.tsx and
+   * search.tsx do not need to change.
+   *
+   * It no longer enables a gradient.
+   * It only tells WeatherCard that this
+   * page fills the complete screen.
+   */
   useWeatherBackground?: boolean;
 };
 
@@ -46,10 +58,14 @@ export function WeatherPage({
   onToggleFavorite,
   useWeatherBackground = false,
 }: WeatherPageProps) {
-  const { colors } =
-    useAppTheme();
+  const {
+    colors,
+  } = useAppTheme();
 
-  const [weather, setWeather] =
+  const [
+    weather,
+    setWeather,
+  ] =
     useState<Weather | null>(
       null
     );
@@ -57,14 +73,19 @@ export function WeatherPage({
   const [
     isLoading,
     setIsLoading,
-  ] = useState(true);
+  ] =
+    useState(true);
 
   const [
     isRefreshing,
     setIsRefreshing,
-  ] = useState(false);
+  ] =
+    useState(false);
 
-  const [error, setError] =
+  const [
+    error,
+    setError,
+  ] =
     useState<string | null>(
       null
     );
@@ -72,24 +93,34 @@ export function WeatherPage({
   const loadWeather =
     useCallback(
       async (
-        showInitialLoader = false
+        refreshing = false
       ) => {
-        if (showInitialLoader) {
-          setIsLoading(true);
+        if (refreshing) {
+          setIsRefreshing(
+            true
+          );
+        } else {
+          setIsLoading(
+            true
+          );
         }
 
-        setError(null);
+        setError(
+          null
+        );
 
         try {
-          const loadedWeather =
-            await getWeather(city);
+          const weatherData =
+            await getWeather(
+              city
+            );
 
           setWeather(
-            loadedWeather
+            weatherData
           );
         } catch (error) {
           console.error(
-            `Failed to load weather for ${city.name}:`,
+            'Failed to load weather:',
             error
           );
 
@@ -97,107 +128,93 @@ export function WeatherPage({
             'Weather data could not be loaded.'
           );
         } finally {
-          if (showInitialLoader) {
-            setIsLoading(false);
-          }
+          setIsLoading(
+            false
+          );
+
+          setIsRefreshing(
+            false
+          );
         }
       },
       [
-        city.id,
-        city.latitude,
-        city.longitude,
-        city.name,
+        city,
       ]
     );
 
   useEffect(() => {
-    void loadWeather(true);
-  }, [loadWeather]);
+    void loadWeather();
+  }, [
+    loadWeather,
+  ]);
 
-  async function handleRefresh() {
-    setIsRefreshing(true);
-
-    try {
-      await loadWeather(false);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }
-
-  const condition =
-    weather
-      ? getWeatherCondition(
-          weather.current.weatherCode,
-          weather.current.isDay
-        )
-      : null;
-
-  const content = (
-    <WeatherCard
-      city={city}
-      weather={weather}
-      isLoading={isLoading}
-      isRefreshing={
-        isRefreshing
-      }
-      error={error}
-      showFavoriteButton={
-        !isCurrentLocation
-      }
-      isFavorite={isFavorite}
-      onToggleFavorite={() =>
-        onToggleFavorite(city)
-      }
-      onRefresh={
-        handleRefresh
-      }
-
-      // Home = full-screen layout.
-      fullScreen={
-        useWeatherBackground
-      }
-    />
-  );
-
-  if (!useWeatherBackground) {
-    return (
-      <View style={styles.container}>
-        {content}
-      </View>
+  function handleRefresh() {
+    void loadWeather(
+      true
     );
   }
 
-  const weatherColor =
-    condition?.color ??
-    colors.background;
+  function handleToggleFavorite() {
+    if (
+      !onToggleFavorite
+    ) {
+      return;
+    }
+
+    void onToggleFavorite(
+      city
+    );
+  }
 
   return (
-    <LinearGradient
-      colors={[
-        weatherColor,
-        colors.background,
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor:
+            colors.background,
+        },
       ]}
-      locations={[
-        0,
-        0.5,
-      ]}
-      start={{
-        x: 1,
-        y: 0,
-      }}
-      end={{
-        x: 0,
-        y: 0.6,
-      }}
-      style={styles.container}
     >
-      {content}
-    </LinearGradient>
+      <WeatherCard
+        city={
+          city
+        }
+        weather={
+          weather
+        }
+        isLoading={
+          isLoading
+        }
+        isRefreshing={
+          isRefreshing
+        }
+        error={
+          error
+        }
+        showFavoriteButton={
+          !isCurrentLocation
+        }
+        isFavorite={
+          isFavorite
+        }
+        onToggleFavorite={
+          handleToggleFavorite
+        }
+        onRefresh={
+          handleRefresh
+        }
+        fullScreen={
+          useWeatherBackground
+        }
+      />
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+const styles =
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+  });

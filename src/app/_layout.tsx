@@ -1,9 +1,22 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import {
+  Stack,
+} from 'expo-router';
 
-import { FavoritesProvider } from '../features/favorites/context/FavoritesContext';
+import {
+  StatusBar,
+} from 'expo-status-bar';
 
-import { useAppTheme } from '../shared/theme/theme';
+import {
+  FavoritesProvider,
+} from '../features/favorites/context/FavoritesContext';
+
+import {
+  WidgetCityProvider,
+} from '../features/weather-widget/context/WidgetCityContext';
+
+import {
+  useAppTheme,
+} from '../shared/theme/theme';
 
 export default function RootLayout() {
   const {
@@ -13,38 +26,40 @@ export default function RootLayout() {
 
   return (
     <FavoritesProvider>
-      <>
-        <Stack
-          screenOptions={{
-            headerShown: false,
+      <WidgetCityProvider>
+        <>
+          <Stack
+            screenOptions={{
+              headerShown: false,
 
-            contentStyle: {
-              backgroundColor:
-                colors.background,
-            },
-          }}
-        >
-          <Stack.Screen
-            name="index"
-          />
-
-          <Stack.Screen
-            name="search"
-            options={{
-              animation:
-                'slide_from_bottom',
+              contentStyle: {
+                backgroundColor:
+                  colors.background,
+              },
             }}
-          />
-        </Stack>
+          >
+            <Stack.Screen
+              name="index"
+            />
 
-        <StatusBar
-          style={
-            isDark
-              ? 'light'
-              : 'dark'
-          }
-        />
-      </>
+            <Stack.Screen
+              name="search"
+              options={{
+                animation:
+                  'slide_from_bottom',
+              }}
+            />
+          </Stack>
+
+          <StatusBar
+            style={
+              isDark
+                ? 'light'
+                : 'dark'
+            }
+          />
+        </>
+      </WidgetCityProvider>
     </FavoritesProvider>
   );
 }

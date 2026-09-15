@@ -3,10 +3,6 @@ import type {
 } from 'react-native-android-widget';
 
 import {
-  getStoredCurrentCity,
-} from '../location/storage/currentCityStorage';
-
-import {
   getWeather,
 } from '../weather/api/getWeather';
 
@@ -14,13 +10,13 @@ import {
   CurrentWeatherWidget,
 } from './components/CurrentWeatherWidget';
 
+import {
+  resolveWidgetCity,
+} from './utils/resolveWidgetCity';
+
 export async function widgetTaskHandler(
   props: WidgetTaskHandlerProps
 ) {
-  /*
-   * Ignore events for widgets other than
-   * our CurrentWeather widget.
-   */
   if (
     props.widgetInfo.widgetName !==
     'CurrentWeather'
@@ -30,7 +26,7 @@ export async function widgetTaskHandler(
 
   switch (props.widgetAction) {
     /*
-     * Widget was added to the home screen.
+     * Widget has just been added.
      */
     case 'WIDGET_ADDED': {
       await renderLiveWeather(
@@ -41,7 +37,10 @@ export async function widgetTaskHandler(
     }
 
     /*
-     * Android requested an update.
+     * Android triggers this automatically.
+     *
+     * app.json now requests this roughly
+     * once every hour.
      */
     case 'WIDGET_UPDATE': {
       await renderLiveWeather(
@@ -52,7 +51,7 @@ export async function widgetTaskHandler(
     }
 
     /*
-     * Widget size changed.
+     * Re-render after resizing.
      */
     case 'WIDGET_RESIZED': {
       await renderLiveWeather(
@@ -63,8 +62,7 @@ export async function widgetTaskHandler(
     }
 
     /*
-     * A clickable element inside the
-     * widget was pressed.
+     * Manual refresh button.
      */
     case 'WIDGET_CLICK': {
       if (
@@ -79,10 +77,6 @@ export async function widgetTaskHandler(
       break;
     }
 
-    /*
-     * Nothing needs to be cleaned up
-     * when the widget is removed.
-     */
     case 'WIDGET_DELETED': {
       break;
     }
@@ -96,34 +90,36 @@ export async function widgetTaskHandler(
 async function renderLiveWeather(
   props: WidgetTaskHandlerProps
 ) {
-  /*
-   * Read the most recent location that
-   * the main app stored for the widget.
-   */
   let city;
 
+  /*
+   * Determine which location to use.
+   *
+   * Explicit widget city:
+   * → selected city
+   *
+   * No explicit city:
+   * → live current location if allowed
+   * → otherwise stored current location
+   */
   try {
     city =
-      await getStoredCurrentCity();
+      await resolveWidgetCity();
   } catch (error) {
     console.error(
-      'Failed to read widget location:',
+      'Failed to resolve widget location:',
       error
     );
 
     renderMessage(
       props,
       null,
-      'Stored location could not be read.'
+      'Widget location could not be determined.'
     );
 
     return;
   }
 
-  /*
-   * The main app has not stored a location
-   * yet.
-   */
   if (!city) {
     renderMessage(
       props,
@@ -135,11 +131,14 @@ async function renderLiveWeather(
   }
 
   /*
-   * Request fresh weather data.
+   * Fetch fresh weather for the resolved
+   * city / coordinates.
    */
   try {
     const weather =
-      await getWeather(city);
+      await getWeather(
+        city
+      );
 
     props.renderWidget({
       light: (
@@ -174,11 +173,13 @@ async function renderLiveWeather(
 
 function renderMessage(
   props: WidgetTaskHandlerProps,
-  city: Awaited<
-    ReturnType<
-      typeof getStoredCurrentCity
-    >
-  >,
+  city:
+    | Awaited<
+        ReturnType<
+          typeof resolveWidgetCity
+        >
+      >
+    | null,
   message: string
 ) {
   try {
