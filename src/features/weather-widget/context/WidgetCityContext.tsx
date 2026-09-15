@@ -5,19 +5,24 @@ import {
   useState,
 } from 'react';
 
+import type {
+  ReactNode,
+} from 'react';
+
 import {
+  Alert,
   Platform,
 } from 'react-native';
+
+import * as Location from 'expo-location';
 
 import {
   requestWidgetUpdate,
 } from 'react-native-android-widget';
 
-import type { City } from '../../city-search/model/city';
-
-import {
-  getStoredCurrentCity,
-} from '../../location/storage/currentCityStorage';
+import type {
+  City,
+} from '../../city-search/model/city';
 
 import {
   getWeather,
@@ -33,8 +38,13 @@ import {
   saveWidgetCity,
 } from '../storage/widgetCityStorage';
 
+import {
+  resolveWidgetCity,
+} from '../utils/resolveWidgetCity';
+
 type WidgetCityContextValue = {
-  widgetCity: City | null;
+  widgetCity:
+    City | null;
 
   isWidgetCity: (
     city: City
@@ -51,7 +61,7 @@ const WidgetCityContext =
   >(undefined);
 
 type WidgetCityProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export function WidgetCityProvider({
@@ -60,17 +70,20 @@ export function WidgetCityProvider({
   /*
    * null means:
    *
-   * use the user's current location.
+   * no manual override,
+   * therefore use current location.
    */
   const [
     widgetCity,
     setWidgetCity,
-  ] = useState<City | null>(
-    null
-  );
+  ] =
+    useState<City | null>(
+      null
+    );
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted =
+      true;
 
     async function loadWidgetCity() {
       try {
@@ -95,7 +108,8 @@ export function WidgetCityProvider({
     void loadWidgetCity();
 
     return () => {
-      isMounted = false;
+      isMounted =
+        false;
     };
   }, []);
 
@@ -103,14 +117,17 @@ export function WidgetCityProvider({
     city: City
   ) {
     /*
-     * No explicit city selected:
-     * current location is the widget source.
+     * No manually selected city means
+     * current location is selected.
      */
     if (
       city.id ===
       'current-location'
     ) {
-      return widgetCity === null;
+      return (
+        widgetCity ===
+        null
+      );
     }
 
     return (
@@ -123,23 +140,39 @@ export function WidgetCityProvider({
     city: City
   ) {
     /*
-     * Selecting the current location
-     * removes the explicit override.
+     * CURRENT LOCATION
      */
     if (
       city.id ===
       'current-location'
     ) {
+      /*
+       * Remove any manually selected
+       * city override.
+       */
       await clearWidgetCity();
 
-      setWidgetCity(null);
+      setWidgetCity(
+        null
+      );
 
-      const currentCity =
-        await getStoredCurrentCity();
+      /*
+       * Ask for background location so
+       * hourly widget refreshes can use
+       * the real device position.
+       */
+      await ensureBackgroundLocationPermission();
 
-      if (currentCity) {
+      /*
+       * Resolve the best current location
+       * and immediately refresh the widget.
+       */
+      const resolvedCity =
+        await resolveWidgetCity();
+
+      if (resolvedCity) {
         await updateAndroidWidget(
-          currentCity
+          resolvedCity
         );
       }
 
@@ -147,17 +180,16 @@ export function WidgetCityProvider({
     }
 
     /*
-     * Store an explicit city for the widget.
+     * MANUALLY SELECTED CITY
      */
-    await saveWidgetCity(city);
+    await saveWidgetCity(
+      city
+    );
 
-    setWidgetCity(city);
+    setWidgetCity(
+      city
+    );
 
-    /*
-     * Update the Android widget immediately
-     * instead of waiting for the user to
-     * press its refresh button.
-     */
     await updateAndroidWidget(
       city
     );
@@ -176,18 +208,123 @@ export function WidgetCityProvider({
   );
 }
 
+async function ensureBackgroundLocationPermission():
+  Promise<void> {
+  if (
+    Platform.OS !==
+    'android'
+  ) {
+    return;
+  }
+
+  const foregroundPermission =
+    await Location.getForegroundPermissionsAsync();
+
+  /*
+   * Background location cannot be granted
+   * unless foreground location has already
+   * been granted.
+   */
+  if (
+    foregroundPermission.status !==
+    'granted'
+  ) {
+    return;
+  }
+
+  const backgroundPermission =
+    await Location.getBackgroundPermissionsAsync();
+
+  if (
+    backgroundPermission.status ===
+    'granted'
+  ) {
+    return;
+  }
+
+  /*
+   * Android 11+ may open the app's
+   * settings screen when requesting
+   * background location.
+   *
+   * Explain why before doing that.
+   */
+  const shouldContinue =
+    await showBackgroundLocationExplanation();
+
+  if (!shouldContinue) {
+    return;
+  }
+
+  try {
+    await Location.requestBackgroundPermissionsAsync();
+  } catch (error) {
+    console.warn(
+      'Background location permission was not granted:',
+      error
+    );
+  }
+}
+
+function showBackgroundLocationExplanation():
+  Promise<boolean> {
+  return new Promise(
+    (resolve) => {
+      Alert.alert(
+        'Allow widget location',
+        'To keep the weather widget updated with your real current location, JustWeather needs location access while the app is not open.',
+        [
+          {
+            text:
+              'Not now',
+
+            style:
+              'cancel',
+
+            onPress: () =>
+              resolve(
+                false
+              ),
+          },
+          {
+            text:
+              'Continue',
+
+            onPress: () =>
+              resolve(
+                true
+              ),
+          },
+        ],
+        {
+          cancelable:
+            true,
+
+          onDismiss: () =>
+            resolve(
+              false
+            ),
+        }
+      );
+    }
+  );
+}
+
 async function updateAndroidWidget(
   city: City
 ) {
   if (
-    Platform.OS !== 'android'
+    Platform.OS !==
+    'android'
   ) {
     return;
   }
 
   try {
     const weather =
-      await getWeather(city);
+      await getWeather(
+        city
+      );
 
     await requestWidgetUpdate({
       widgetName:
@@ -212,13 +349,6 @@ async function updateAndroidWidget(
       }),
     });
   } catch (error) {
-    /*
-     * City selection should still succeed
-     * even if the widget cannot immediately
-     * fetch new weather.
-     *
-     * Its own refresh button can retry later.
-     */
     console.error(
       'Failed to update Android widget:',
       error
