@@ -19,65 +19,93 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { searchCities } from '../features/city-search/api/searchCities';
+import {
+  searchCities,
+} from '../features/city-search/api/searchCities';
 
-import { CitySearchForm } from '../features/city-search/components/CitySearchForm';
+import {
+  CitySearchForm,
+} from '../features/city-search/components/CitySearchForm';
 
-import { CitySearchResults } from '../features/city-search/components/CitySearchResults';
+import {
+  CitySearchResults,
+} from '../features/city-search/components/CitySearchResults';
 
-import type { City } from '../features/city-search/model/city';
+import type {
+  City,
+} from '../features/city-search/model/city';
 
-import { useFavorites } from '../features/favorites/context/FavoritesContext';
+import {
+  useFavorites,
+} from '../features/favorites/context/FavoritesContext';
 
-import { WeatherPage } from '../features/weather/components/WeatherPage';
+import {
+  WeatherPage,
+} from '../features/weather/components/WeatherPage';
 
-import type { AppColors } from '../shared/theme/theme';
+import type {
+  AppColors,
+} from '../shared/theme/theme';
 
-import { useAppTheme } from '../shared/theme/theme';
+import {
+  useAppTheme,
+} from '../shared/theme/theme';
 
 export default function SearchScreen() {
   const insets =
     useSafeAreaInsets();
 
-  const { colors } =
+  const {
+    colors,
+  } =
     useAppTheme();
 
   const styles =
-    createStyles(colors);
+    createStyles(
+      colors
+    );
 
   const {
     isFavorite,
     toggleFavorite,
-  } = useFavorites();
+  } =
+    useFavorites();
 
   const [
     searchTerm,
     setSearchTerm,
-  ] = useState('');
+  ] =
+    useState('');
 
   const [
     cities,
     setCities,
-  ] = useState<City[]>([]);
+  ] =
+    useState<City[]>(
+      []
+    );
 
   const [
     selectedCity,
     setSelectedCity,
-  ] = useState<City | null>(
-    null
-  );
+  ] =
+    useState<City | null>(
+      null
+    );
 
   const [
     isSearching,
     setIsSearching,
-  ] = useState(false);
+  ] =
+    useState(false);
 
   const [
     searchError,
     setSearchError,
-  ] = useState<
-    string | null
-  >(null);
+  ] =
+    useState<string | null>(
+      null
+    );
 
   async function handleSearch() {
     const trimmedSearchTerm =
@@ -91,11 +119,17 @@ export default function SearchScreen() {
       return;
     }
 
-    setIsSearching(true);
+    setIsSearching(
+      true
+    );
 
-    setSearchError(null);
+    setSearchError(
+      null
+    );
 
-    setSelectedCity(null);
+    setSelectedCity(
+      null
+    );
 
     try {
       const foundCities =
@@ -103,22 +137,15 @@ export default function SearchScreen() {
           trimmedSearchTerm
         );
 
-      /*
-       * Put the new results into the
-       * UI immediately.
-       */
-      setCities(foundCities);
+      setCities(
+        foundCities
+      );
 
-      /*
-       * The user has finished entering
-       * the search term, so the keyboard
-       * no longer needs to cover the
-       * results.
-       */
       Keyboard.dismiss();
 
       if (
-        foundCities.length === 0
+        foundCities.length ===
+        0
       ) {
         setSearchError(
           'No matching cities found.'
@@ -132,50 +159,60 @@ export default function SearchScreen() {
 
       Keyboard.dismiss();
 
-      setCities([]);
+      setCities(
+        []
+      );
 
       setSearchError(
         'City search failed. Please try again.'
       );
     } finally {
-      setIsSearching(false);
+      setIsSearching(
+        false
+      );
     }
   }
 
   function handleCitySelect(
     city: City
   ) {
-    /*
-     * Hide the keyboard in case it
-     * somehow still happens to be open.
-     */
     Keyboard.dismiss();
 
-    /*
-     * Selecting a city switches the
-     * entire screen into weather mode.
-     */
-    setSelectedCity(city);
+    setSelectedCity(
+      city
+    );
 
-    setSearchError(null);
+    setSearchError(
+      null
+    );
   }
 
   async function handleToggleFavorite(
     city: City
   ) {
-    await toggleFavorite(city);
+    await toggleFavorite(
+      city
+    );
+  }
+
+  function handleBackToHome() {
+    /*
+     * Replace the Search route with Home.
+     *
+     * This means the back button on the
+     * selected city's weather page does
+     * NOT return to the search results.
+     */
+    router.replace('/');
   }
 
   /*
-   * ------------------------------------------------
+   * -----------------------------------
    * SELECTED CITY
-   * ------------------------------------------------
+   * -----------------------------------
    *
-   * As soon as a city is selected we
-   * stop rendering the search interface
-   * entirely.
-   *
-   * WeatherPage now owns the whole screen.
+   * Once a city is selected, WeatherPage
+   * takes over the complete screen.
    */
   if (selectedCity) {
     return (
@@ -185,7 +222,9 @@ export default function SearchScreen() {
         }
       >
         <WeatherPage
-          city={selectedCity}
+          city={
+            selectedCity
+          }
           isCurrentLocation={
             false
           }
@@ -197,23 +236,20 @@ export default function SearchScreen() {
           onToggleFavorite={
             handleToggleFavorite
           }
-
-          /*
-           * This gives the selected city
-           * the same full-screen reactive
-           * weather background as Home.
-           */
           useWeatherBackground
         />
 
         {/*
-          Floating button to return to the
-          city search without leaving the
-          Search route completely.
-        */}
+         * Floating back button.
+         *
+         * This now returns directly
+         * to the Home screen.
+         */}
         <Pressable
-          style={({ pressed }) => [
-            styles.backToSearchButton,
+          style={({
+            pressed,
+          }) => [
+            styles.backToHomeButton,
 
             {
               bottom:
@@ -224,22 +260,17 @@ export default function SearchScreen() {
             pressed &&
               styles.buttonPressed,
           ]}
-          onPress={() => {
-            setSelectedCity(null);
-
-            /*
-             * Clear old results so we
-             * return to a clean search
-             * screen.
-             */
-            setCities([]);
-          }}
+          onPress={
+            handleBackToHome
+          }
           accessibilityRole="button"
-          accessibilityLabel="Back to city search"
+          accessibilityLabel="Back to home"
         >
           <ArrowLeft
             size={25}
-            strokeWidth={2.2}
+            strokeWidth={
+              2.2
+            }
             color={
               colors.primaryText
             }
@@ -250,9 +281,9 @@ export default function SearchScreen() {
   }
 
   /*
-   * ------------------------------------------------
+   * -----------------------------------
    * SEARCH MODE
-   * ------------------------------------------------
+   * -----------------------------------
    */
   return (
     <View
@@ -261,18 +292,26 @@ export default function SearchScreen() {
 
         {
           paddingTop:
-            insets.top + 16,
+            insets.top +
+            16,
 
           paddingBottom:
-            insets.bottom + 16,
+            insets.bottom +
+            16,
         },
       ]}
     >
       {/* HEADER */}
 
-      <View style={styles.header}>
+      <View
+        style={
+          styles.header
+        }
+      >
         <Pressable
-          style={({ pressed }) => [
+          style={({
+            pressed,
+          }) => [
             styles.backButton,
 
             pressed &&
@@ -287,7 +326,9 @@ export default function SearchScreen() {
         >
           <ArrowLeft
             size={24}
-            color={colors.text}
+            color={
+              colors.text
+            }
           />
         </Pressable>
 
@@ -330,7 +371,9 @@ export default function SearchScreen() {
       {/* SEARCH INPUT */}
 
       <CitySearchForm
-        city={searchTerm}
+        city={
+          searchTerm
+        }
         isLoading={
           isSearching
         }
@@ -341,12 +384,9 @@ export default function SearchScreen() {
             value
           );
 
-          /*
-           * Remove an old error as soon
-           * as the user starts typing
-           * again.
-           */
-          if (searchError) {
+          if (
+            searchError
+          ) {
             setSearchError(
               null
             );
@@ -371,7 +411,8 @@ export default function SearchScreen() {
 
       {/* RESULTS */}
 
-      {cities.length > 0 && (
+      {cities.length >
+        0 && (
         <View
           style={
             styles.resultsContainer
@@ -386,7 +427,9 @@ export default function SearchScreen() {
           </Text>
 
           <CitySearchResults
-            cities={cities}
+            cities={
+              cities
+            }
             onCitySelect={
               handleCitySelect
             }
@@ -404,7 +447,8 @@ function createStyles(
     container: {
       flex: 1,
 
-      paddingHorizontal: 20,
+      paddingHorizontal:
+        20,
 
       backgroundColor:
         colors.background,
@@ -418,14 +462,16 @@ function createStyles(
     },
 
     header: {
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
       alignItems:
         'flex-start',
 
       gap: 12,
 
-      marginBottom: 24,
+      marginBottom:
+        24,
     },
 
     backButton: {
@@ -433,9 +479,11 @@ function createStyles(
 
       height: 44,
 
-      borderRadius: 22,
+      borderRadius:
+        22,
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'center',
@@ -443,7 +491,8 @@ function createStyles(
       backgroundColor:
         colors.surface,
 
-      borderWidth: 1,
+      borderWidth:
+        1,
 
       borderColor:
         colors.border,
@@ -454,9 +503,11 @@ function createStyles(
     },
 
     titleRow: {
-      flexDirection: 'row',
+      flexDirection:
+        'row',
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       gap: 8,
     },
@@ -464,7 +515,8 @@ function createStyles(
     title: {
       fontSize: 26,
 
-      fontWeight: '800',
+      fontWeight:
+        '800',
 
       color:
         colors.text,
@@ -485,7 +537,8 @@ function createStyles(
       color:
         colors.error,
 
-      fontWeight: '500',
+      fontWeight:
+        '500',
     },
 
     resultsContainer: {
@@ -495,18 +548,25 @@ function createStyles(
     },
 
     resultsTitle: {
-      marginBottom: 10,
+      marginBottom:
+        10,
 
       fontSize: 16,
 
-      fontWeight: '700',
+      fontWeight:
+        '700',
 
       color:
         colors.text,
     },
 
-    backToSearchButton: {
-      position: 'absolute',
+    /*
+     * Floating button shown only
+     * after selecting a city.
+     */
+    backToHomeButton: {
+      position:
+        'absolute',
 
       right: 20,
 
@@ -514,9 +574,11 @@ function createStyles(
 
       height: 58,
 
-      borderRadius: 29,
+      borderRadius:
+        29,
 
-      alignItems: 'center',
+      alignItems:
+        'center',
 
       justifyContent:
         'center',
@@ -524,12 +586,11 @@ function createStyles(
       backgroundColor:
         colors.primary,
 
-      borderWidth: 1,
+      borderWidth:
+        1,
 
       borderColor:
         colors.border,
-
-      elevation: 12,
 
       zIndex: 100,
     },
