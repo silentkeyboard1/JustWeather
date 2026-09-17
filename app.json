@@ -55,11 +55,41 @@
           "widgets": [
             {
               "name": "CurrentWeather",
-              "label": "JustWeather",
-              "description": "Current weather and upcoming hours",
+              "label": "JustWeather 4×2",
+              "description": "Current weather and the next five hours",
               "minWidth": "250dp",
               "minHeight": "110dp",
               "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "CurrentWeatherCompact",
+              "label": "JustWeather 4×1",
+              "description": "Compact current weather",
+              "minWidth": "250dp",
+              "minHeight": "50dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "CurrentWeatherVertical",
+              "label": "JustWeather 2×4",
+              "description": "Vertical current weather and upcoming hours",
+              "minWidth": "110dp",
+              "minHeight": "250dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 4,
+              "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "CurrentWeatherSquare",
+              "label": "JustWeather 2×2",
+              "description": "Current weather",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
               "targetCellHeight": 2,
               "updatePeriodMillis": 3600000
             }

@@ -2,75 +2,94 @@ import type {
   WidgetTaskHandlerProps,
 } from 'react-native-android-widget';
 
+import type {
+  City,
+} from '../city-search/model/city';
+
 import {
   getWeather,
 } from '../weather/api/getWeather';
+
+import type {
+  Weather,
+} from '../weather/model/weather';
+
+import {
+  CompactCurrentWeatherWidget,
+} from './components/CompactCurrentWeatherWidget';
 
 import {
   CurrentWeatherWidget,
 } from './components/CurrentWeatherWidget';
 
 import {
+  SquareCurrentWeatherWidget,
+} from './components/SquareCurrentWeatherWidget';
+
+import {
+  VerticalCurrentWeatherWidget,
+} from './components/VerticalCurrentWeatherWidget';
+
+import {
   resolveWidgetCity,
 } from './utils/resolveWidgetCity';
+
+type WidgetSize =
+  | 'large'
+  | 'compact'
+  | 'vertical'
+  | 'square';
 
 export async function widgetTaskHandler(
   props: WidgetTaskHandlerProps
 ) {
-  if (
-    props.widgetInfo.widgetName !==
-    'CurrentWeather'
-  ) {
+  const widgetSize =
+    getWidgetSize(
+      props.widgetInfo.widgetName
+    );
+
+  if (!widgetSize) {
     return;
   }
 
-  switch (props.widgetAction) {
-    /*
-     * Widget has just been added.
-     */
+  switch (
+    props.widgetAction
+  ) {
     case 'WIDGET_ADDED': {
       await renderLiveWeather(
-        props
+        props,
+        widgetSize
       );
 
       break;
     }
 
-    /*
-     * Android triggers this automatically.
-     *
-     * app.json now requests this roughly
-     * once every hour.
-     */
     case 'WIDGET_UPDATE': {
       await renderLiveWeather(
-        props
+        props,
+        widgetSize
       );
 
       break;
     }
 
-    /*
-     * Re-render after resizing.
-     */
     case 'WIDGET_RESIZED': {
       await renderLiveWeather(
-        props
+        props,
+        widgetSize
       );
 
       break;
     }
 
-    /*
-     * Manual refresh button.
-     */
     case 'WIDGET_CLICK': {
       if (
         props.clickAction ===
         'REFRESH_WEATHER'
       ) {
         await renderLiveWeather(
-          props
+          props,
+          widgetSize
         );
       }
 
@@ -87,21 +106,48 @@ export async function widgetTaskHandler(
   }
 }
 
-async function renderLiveWeather(
-  props: WidgetTaskHandlerProps
-) {
-  let city;
+function getWidgetSize(
+  widgetName: string
+): WidgetSize | null {
+  if (
+    widgetName ===
+    'CurrentWeather'
+  ) {
+    return 'large';
+  }
 
-  /*
-   * Determine which location to use.
-   *
-   * Explicit widget city:
-   * → selected city
-   *
-   * No explicit city:
-   * → live current location if allowed
-   * → otherwise stored current location
-   */
+  if (
+    widgetName ===
+    'CurrentWeatherCompact'
+  ) {
+    return 'compact';
+  }
+
+  if (
+    widgetName ===
+    'CurrentWeatherVertical'
+  ) {
+    return 'vertical';
+  }
+
+  if (
+    widgetName ===
+    'CurrentWeatherSquare'
+  ) {
+    return 'square';
+  }
+
+  return null;
+}
+
+async function renderLiveWeather(
+  props: WidgetTaskHandlerProps,
+  widgetSize: WidgetSize
+) {
+  let city:
+    | City
+    | null;
+
   try {
     city =
       await resolveWidgetCity();
@@ -113,6 +159,7 @@ async function renderLiveWeather(
 
     renderMessage(
       props,
+      widgetSize,
       null,
       'Widget location could not be determined.'
     );
@@ -123,6 +170,7 @@ async function renderLiveWeather(
   if (!city) {
     renderMessage(
       props,
+      widgetSize,
       null,
       'Open JustWeather once to set your location.'
     );
@@ -130,33 +178,18 @@ async function renderLiveWeather(
     return;
   }
 
-  /*
-   * Fetch fresh weather for the resolved
-   * city / coordinates.
-   */
   try {
     const weather =
       await getWeather(
         city
       );
 
-    props.renderWidget({
-      light: (
-        <CurrentWeatherWidget
-          theme="light"
-          city={city}
-          weather={weather}
-        />
-      ),
-
-      dark: (
-        <CurrentWeatherWidget
-          theme="dark"
-          city={city}
-          weather={weather}
-        />
-      ),
-    });
+    renderWeather(
+      props,
+      widgetSize,
+      city,
+      weather
+    );
   } catch (error) {
     console.error(
       'Widget weather update failed:',
@@ -165,24 +198,201 @@ async function renderLiveWeather(
 
     renderMessage(
       props,
+      widgetSize,
       city,
       'Weather unavailable. Tap refresh to try again.'
     );
   }
 }
 
+function renderWeather(
+  props: WidgetTaskHandlerProps,
+  widgetSize: WidgetSize,
+  city: City,
+  weather: Weather
+) {
+  if (
+    widgetSize ===
+    'compact'
+  ) {
+    props.renderWidget({
+      light: (
+        <CompactCurrentWeatherWidget
+          theme="light"
+          city={city}
+          weather={weather}
+        />
+      ),
+
+      dark: (
+        <CompactCurrentWeatherWidget
+          theme="dark"
+          city={city}
+          weather={weather}
+        />
+      ),
+    });
+
+    return;
+  }
+
+  if (
+    widgetSize ===
+    'vertical'
+  ) {
+    props.renderWidget({
+      light: (
+        <VerticalCurrentWeatherWidget
+          theme="light"
+          city={city}
+          weather={weather}
+        />
+      ),
+
+      dark: (
+        <VerticalCurrentWeatherWidget
+          theme="dark"
+          city={city}
+          weather={weather}
+        />
+      ),
+    });
+
+    return;
+  }
+
+  if (
+    widgetSize ===
+    'square'
+  ) {
+    props.renderWidget({
+      light: (
+        <SquareCurrentWeatherWidget
+          theme="light"
+          city={city}
+          weather={weather}
+        />
+      ),
+
+      dark: (
+        <SquareCurrentWeatherWidget
+          theme="dark"
+          city={city}
+          weather={weather}
+        />
+      ),
+    });
+
+    return;
+  }
+
+  props.renderWidget({
+    light: (
+      <CurrentWeatherWidget
+        theme="light"
+        city={city}
+        weather={weather}
+      />
+    ),
+
+    dark: (
+      <CurrentWeatherWidget
+        theme="dark"
+        city={city}
+        weather={weather}
+      />
+    ),
+  });
+}
+
 function renderMessage(
   props: WidgetTaskHandlerProps,
-  city:
-    | Awaited<
-        ReturnType<
-          typeof resolveWidgetCity
-        >
-      >
-    | null,
+  widgetSize: WidgetSize,
+  city: City | null,
   message: string
 ) {
   try {
+    if (
+      widgetSize ===
+      'compact'
+    ) {
+      props.renderWidget({
+        light: (
+          <CompactCurrentWeatherWidget
+            theme="light"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+
+        dark: (
+          <CompactCurrentWeatherWidget
+            theme="dark"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+      });
+
+      return;
+    }
+
+    if (
+      widgetSize ===
+      'vertical'
+    ) {
+      props.renderWidget({
+        light: (
+          <VerticalCurrentWeatherWidget
+            theme="light"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+
+        dark: (
+          <VerticalCurrentWeatherWidget
+            theme="dark"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+      });
+
+      return;
+    }
+
+    if (
+      widgetSize ===
+      'square'
+    ) {
+      props.renderWidget({
+        light: (
+          <SquareCurrentWeatherWidget
+            theme="light"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+
+        dark: (
+          <SquareCurrentWeatherWidget
+            theme="dark"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+      });
+
+      return;
+    }
+
     props.renderWidget({
       light: (
         <CurrentWeatherWidget
