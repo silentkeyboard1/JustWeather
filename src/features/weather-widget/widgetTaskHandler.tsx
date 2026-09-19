@@ -23,6 +23,10 @@ import {
 } from './components/CurrentWeatherWidget';
 
 import {
+  MiniCurrentWeatherWidget,
+} from './components/MiniCurrentWeatherWidget';
+
+import {
   SquareCurrentWeatherWidget,
 } from './components/SquareCurrentWeatherWidget';
 
@@ -38,7 +42,8 @@ type WidgetSize =
   | 'large'
   | 'compact'
   | 'vertical'
-  | 'square';
+  | 'square'
+  | 'mini';
 
 export async function widgetTaskHandler(
   props: WidgetTaskHandlerProps
@@ -55,24 +60,8 @@ export async function widgetTaskHandler(
   switch (
     props.widgetAction
   ) {
-    case 'WIDGET_ADDED': {
-      await renderLiveWeather(
-        props,
-        widgetSize
-      );
-
-      break;
-    }
-
-    case 'WIDGET_UPDATE': {
-      await renderLiveWeather(
-        props,
-        widgetSize
-      );
-
-      break;
-    }
-
+    case 'WIDGET_ADDED':
+    case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED': {
       await renderLiveWeather(
         props,
@@ -135,6 +124,13 @@ function getWidgetSize(
     'CurrentWeatherSquare'
   ) {
     return 'square';
+  }
+
+  if (
+    widgetName ===
+    'CurrentWeatherMini'
+  ) {
+    return 'mini';
   }
 
   return null;
@@ -286,6 +282,31 @@ function renderWeather(
     return;
   }
 
+  if (
+    widgetSize ===
+    'mini'
+  ) {
+    props.renderWidget({
+      light: (
+        <MiniCurrentWeatherWidget
+          theme="light"
+          city={city}
+          weather={weather}
+        />
+      ),
+
+      dark: (
+        <MiniCurrentWeatherWidget
+          theme="dark"
+          city={city}
+          weather={weather}
+        />
+      ),
+    });
+
+    return;
+  }
+
   props.renderWidget({
     light: (
       <CurrentWeatherWidget
@@ -382,6 +403,33 @@ function renderMessage(
 
         dark: (
           <SquareCurrentWeatherWidget
+            theme="dark"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+      });
+
+      return;
+    }
+
+    if (
+      widgetSize ===
+      'mini'
+    ) {
+      props.renderWidget({
+        light: (
+          <MiniCurrentWeatherWidget
+            theme="light"
+            city={city}
+            weather={null}
+            message={message}
+          />
+        ),
+
+        dark: (
+          <MiniCurrentWeatherWidget
             theme="dark"
             city={city}
             weather={null}

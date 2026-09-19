@@ -92,6 +92,16 @@
               "targetCellWidth": 2,
               "targetCellHeight": 2,
               "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "CurrentWeatherMini",
+              "label": "JustWeather 2×1",
+              "description": "Minimal current weather",
+              "minWidth": "110dp",
+              "minHeight": "50dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 1,
+              "updatePeriodMillis": 3600000
             }
           ]
         }
