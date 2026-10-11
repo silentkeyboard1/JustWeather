@@ -60,17 +60,59 @@ export async function widgetTaskHandler(
   switch (
     props.widgetAction
   ) {
-    case 'WIDGET_ADDED':
-    case 'WIDGET_UPDATE':
-    case 'WIDGET_RESIZED': {
+    /*
+     * A completely new widget needs
+     * something rendered even if the first
+     * request fails.
+     */
+    case 'WIDGET_ADDED': {
       await renderLiveWeather(
         props,
-        widgetSize
+        widgetSize,
+        true
       );
 
       break;
     }
 
+    /*
+     * Periodic refresh.
+     *
+     * If this fails, keep whatever weather
+     * is already visible on the widget.
+     */
+    case 'WIDGET_UPDATE': {
+      await renderLiveWeather(
+        props,
+        widgetSize,
+        false
+      );
+
+      break;
+    }
+
+    /*
+     * Same principle when resizing:
+     * don't replace valid weather with an
+     * error because GPS/network happened
+     * to fail at that exact moment.
+     */
+    case 'WIDGET_RESIZED': {
+      await renderLiveWeather(
+        props,
+        widgetSize,
+        false
+      );
+
+      break;
+    }
+
+    /*
+     * Manual refresh.
+     *
+     * A failed refresh also keeps the old
+     * weather instead of showing an error.
+     */
     case 'WIDGET_CLICK': {
       if (
         props.clickAction ===
@@ -78,7 +120,8 @@ export async function widgetTaskHandler(
       ) {
         await renderLiveWeather(
           props,
-          widgetSize
+          widgetSize,
+          false
         );
       }
 
@@ -138,8 +181,14 @@ function getWidgetSize(
 
 async function renderLiveWeather(
   props: WidgetTaskHandlerProps,
-  widgetSize: WidgetSize
+  widgetSize: WidgetSize,
+  showErrorIfNothingRendered: boolean
 ) {
+  /*
+   * -----------------------------------
+   * 1. RESOLVE LOCATION
+   * -----------------------------------
+   */
   let city:
     | City
     | null;
@@ -149,21 +198,29 @@ async function renderLiveWeather(
       await resolveWidgetCity();
   } catch (error) {
     console.error(
-      'Failed to resolve widget location:',
+      'Widget location resolution failed:',
       error
     );
 
-    renderMessage(
-      props,
-      widgetSize,
-      null,
-      'Widget location could not be determined.'
-    );
+    /*
+     * Existing widget:
+     * leave old data untouched.
+     */
+    if (
+      !showErrorIfNothingRendered
+    ) {
+      console.log(
+        'Widget: keeping previous weather because location refresh failed.'
+      );
 
-    return;
-  }
+      return;
+    }
 
-  if (!city) {
+    /*
+     * Newly-added widget:
+     * there is no old data yet, so show
+     * a useful message.
+     */
     renderMessage(
       props,
       widgetSize,
@@ -174,12 +231,84 @@ async function renderLiveWeather(
     return;
   }
 
+  if (!city) {
+    if (
+      !showErrorIfNothingRendered
+    ) {
+      console.log(
+        'Widget: no location available, keeping previous weather.'
+      );
+
+      return;
+    }
+
+    renderMessage(
+      props,
+      widgetSize,
+      null,
+      'Open JustWeather once to set your location.'
+    );
+
+    return;
+  }
+
+  /*
+   * -----------------------------------
+   * 2. FETCH WEATHER
+   * -----------------------------------
+   */
+  let weather:
+    Weather;
+
   try {
-    const weather =
+    weather =
       await getWeather(
         city
       );
+  } catch (error) {
+    console.error(
+      'Widget weather request failed:',
+      error
+    );
 
+    /*
+     * This is the key behavior:
+     *
+     * If weather was already shown, don't
+     * overwrite it just because Internet
+     * is temporarily unavailable.
+     */
+    if (
+      !showErrorIfNothingRendered
+    ) {
+      console.log(
+        'Widget: keeping previous weather because the weather refresh failed.'
+      );
+
+      return;
+    }
+
+    /*
+     * Only a brand-new widget gets an
+     * error state, because it has nothing
+     * useful to preserve yet.
+     */
+    renderMessage(
+      props,
+      widgetSize,
+      city,
+      'Weather unavailable. Tap refresh to try again.'
+    );
+
+    return;
+  }
+
+  /*
+   * -----------------------------------
+   * 3. SUCCESS
+   * -----------------------------------
+   */
+  try {
     renderWeather(
       props,
       widgetSize,
@@ -188,15 +317,25 @@ async function renderLiveWeather(
     );
   } catch (error) {
     console.error(
-      'Widget weather update failed:',
+      'Widget render failed:',
       error
     );
+
+    /*
+     * Again, do not destroy an existing
+     * good widget because one render failed.
+     */
+    if (
+      !showErrorIfNothingRendered
+    ) {
+      return;
+    }
 
     renderMessage(
       props,
       widgetSize,
       city,
-      'Weather unavailable. Tap refresh to try again.'
+      'Widget unavailable.'
     );
   }
 }
@@ -307,6 +446,9 @@ function renderWeather(
     return;
   }
 
+  /*
+   * Default 4x2 widget.
+   */
   props.renderWidget({
     light: (
       <CurrentWeatherWidget

@@ -46,12 +46,12 @@ export function CurrentWeatherWidget({
    * light gray
    */
   const backgroundColor: ColorProp = isDark
-    ? "#202124"
+    ? "#212121"
     : "#F1F3F4";
 
   const textColor: ColorProp = isDark
     ? "#F1F3F4"
-    : "#202124";
+    : "#222222";
 
   const secondaryTextColor: ColorProp = isDark
     ? "#BDC1C6"
@@ -62,7 +62,7 @@ export function CurrentWeatherWidget({
    * hourly forecast pill.
    */
   const hourlyBackgroundColor: ColorProp = isDark
-    ? "#2B2C2F"
+    ? "#303030"
     : "#E3E5E8";
 
   const currentCondition = weather

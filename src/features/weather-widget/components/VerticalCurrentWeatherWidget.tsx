@@ -56,13 +56,13 @@ export function VerticalCurrentWeatherWidget({
 
   const backgroundColor: ColorProp =
     isDark
-      ? '#202124'
+      ? '#222222'
       : '#F1F3F4';
 
   const textColor: ColorProp =
     isDark
       ? '#F1F3F4'
-      : '#202124';
+      : '#222222';
 
   const secondaryTextColor: ColorProp =
     isDark
@@ -71,7 +71,7 @@ export function VerticalCurrentWeatherWidget({
 
   const hourlyBackgroundColor: ColorProp =
     isDark
-      ? '#2B2C2F'
+      ? '#303030'
       : '#E3E5E8';
 
   const currentCondition =
