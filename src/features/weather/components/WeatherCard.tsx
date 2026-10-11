@@ -7,7 +7,7 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from 'react-native';
+} from "react-native";
 
 import {
   Droplets,
@@ -15,39 +15,23 @@ import {
   Star,
   Thermometer,
   Wind,
-} from 'lucide-react-native';
+} from "lucide-react-native";
 
-import {
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import type {
-  City,
-} from '../../city-search/model/city';
+import type { City } from "../../city-search/model/city";
 
-import {
-  useWidgetCity,
-} from '../../weather-widget/context/WidgetCityContext';
+import { useWidgetCity } from "../../weather-widget/context/WidgetCityContext";
 
-import type {
-  Weather,
-} from '../model/weather';
+import type { Weather } from "../model/weather";
 
-import {
-  getWeatherCondition,
-} from '../utils/getWeatherCondition';
+import { getWeatherCondition } from "../utils/getWeatherCondition";
 
-import {
-  WeatherIcon,
-} from './WeatherIcon';
+import { WeatherIcon } from "./WeatherIcon";
 
-import type {
-  AppColors,
-} from '../../../shared/theme/theme';
+import type { AppColors } from "../../../shared/theme/theme";
 
-import {
-  useAppTheme,
-} from '../../../shared/theme/theme';
+import { useAppTheme } from "../../../shared/theme/theme";
 
 type WeatherCardProps = {
   city: City;
@@ -83,25 +67,13 @@ export function WeatherCard({
   onRefresh,
   fullScreen = false,
 }: WeatherCardProps) {
-  const {
-    width,
-  } =
-    useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const insets =
-    useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
-  const {
-    colors,
-    isDark,
-  } =
-    useAppTheme();
+  const { colors, isDark } = useAppTheme();
 
-  const {
-    isWidgetCity,
-    selectWidgetCity,
-  } =
-    useWidgetCity();
+  const { isWidgetCity, selectWidgetCity } = useWidgetCity();
 
   /*
    * Light mode always uses our
@@ -110,29 +82,15 @@ export function WeatherCard({
    * Dark mode uses the normal
    * theme text color.
    */
-  const textColor =
-    isDark
-      ? colors.text
-      : '#302F2C';
+  const textColor = isDark ? colors.text : "#302F2C";
 
-  const styles =
-    createStyles(
-      colors,
-      textColor
-    );
+  const styles = createStyles(colors, textColor);
 
-  const currentCondition =
-    weather
-      ? getWeatherCondition(
-          weather.current.weatherCode,
-          weather.current.isDay
-        )
-      : null;
+  const currentCondition = weather
+    ? getWeatherCondition(weather.current.weatherCode, weather.current.isDay)
+    : null;
 
-  const selectedForWidget =
-    isWidgetCity(
-      city
-    );
+  const selectedForWidget = isWidgetCity(city);
 
   /*
    * Responsive temperature size.
@@ -141,164 +99,84 @@ export function WeatherCard({
    * visual element without dominating
    * the complete screen.
    */
-  const temperatureSize =
-    Math.min(
-      width * 0.24,
-      96
-    );
+  const temperatureSize = Math.min(width * 0.24, 96);
 
   return (
     <ScrollView
-      style={
-        styles.container
-      }
+      style={styles.container}
       contentContainerStyle={[
         styles.content,
 
         fullScreen && {
-          paddingTop:
-            insets.top +
-            14,
+          paddingTop: insets.top + 14,
 
-          paddingBottom:
-            insets.bottom +
-            105,
+          paddingBottom: insets.bottom + 105,
         },
       ]}
-      showsVerticalScrollIndicator={
-        false
-      }
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
-          refreshing={
-            isRefreshing
-          }
-          onRefresh={
-            onRefresh
-          }
-          colors={[
-            colors.primary,
-          ]}
-          tintColor={
-            textColor
-          }
-          progressBackgroundColor={
-            colors.surface
-          }
-          progressViewOffset={
-            fullScreen
-              ? insets.top
-              : 0
-          }
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          colors={[colors.primary]}
+          tintColor={textColor}
+          progressBackgroundColor={colors.surface}
+          progressViewOffset={fullScreen ? insets.top : 0}
         />
       }
     >
       {/* HEADER */}
 
-      <View
-        style={
-          styles.header
-        }
-      >
-        <View
-          style={
-            styles.cityInfo
-          }
-        >
-          <Text
-            numberOfLines={
-              1
-            }
-            style={
-              styles.cityName
-            }
-          >
+      <View style={styles.header}>
+        <View style={styles.cityInfo}>
+          <Text numberOfLines={1} style={styles.cityName}>
             {city.name}
           </Text>
 
-          <Text
-            numberOfLines={
-              1
-            }
-            style={
-              styles.cityLocation
-            }
-          >
-            {formatLocation(
-              city
-            )}
+          <Text numberOfLines={1} style={styles.cityLocation}>
+            {formatLocation(city)}
           </Text>
         </View>
 
-        <View
-          style={
-            styles.headerActions
-          }
-        >
+        <View style={styles.headerActions}>
           {/* FAVORITE BUTTON */}
 
-          {showFavoriteButton &&
-            onToggleFavorite && (
-              <Pressable
-                style={({
-                  pressed,
-                }) => [
-                  styles.headerButton,
+          {showFavoriteButton && onToggleFavorite && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.headerButton,
 
-                  pressed &&
-                    styles.headerButtonPressed,
-                ]}
-                onPress={
-                  onToggleFavorite
-                }
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  isFavorite
-                    ? 'Remove from favorites'
-                    : 'Add to favorites'
-                }
-              >
-                <Star
-                  size={27}
-                  strokeWidth={
-                    2
-                  }
-                  color={
-                    isFavorite
-                      ? colors.favorite
-                      : textColor
-                  }
-                  fill={
-                    isFavorite
-                      ? colors.favorite
-                      : 'transparent'
-                  }
-                />
-              </Pressable>
-            )}
+                pressed && styles.headerButtonPressed,
+              ]}
+              onPress={onToggleFavorite}
+              hitSlop={8}
+              accessibilityRole='button'
+              accessibilityLabel={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+            >
+              <Star
+                size={27}
+                strokeWidth={2}
+                color={isFavorite ? colors.favorite : textColor}
+                fill={isFavorite ? colors.favorite : "transparent"}
+              />
+            </Pressable>
+          )}
 
           {/* WIDGET CITY BUTTON */}
 
           <Pressable
-            style={({
-              pressed,
-            }) => [
+            style={({ pressed }) => [
               styles.headerButton,
 
-              selectedForWidget &&
-                styles.widgetButtonSelected,
+              selectedForWidget && styles.widgetButtonSelected,
 
-              pressed &&
-                styles.headerButtonPressed,
+              pressed && styles.headerButtonPressed,
             ]}
-            onPress={() =>
-              void selectWidgetCity(
-                city
-              )
-            }
+            onPress={() => void selectWidgetCity(city)}
             hitSlop={8}
-            accessibilityRole="button"
+            accessibilityRole='button'
             accessibilityLabel={
               selectedForWidget
                 ? `${city.name} is used by the weather widget`
@@ -307,16 +185,8 @@ export function WeatherCard({
           >
             <LayoutGrid
               size={26}
-              strokeWidth={
-                selectedForWidget
-                  ? 2.6
-                  : 2
-              }
-              color={
-                selectedForWidget
-                  ? colors.primary
-                  : textColor
-              }
+              strokeWidth={selectedForWidget ? 2.6 : 2}
+              color={selectedForWidget ? colors.primary : textColor}
             />
           </Pressable>
         </View>
@@ -324,136 +194,65 @@ export function WeatherCard({
 
       {/* INITIAL LOADING */}
 
-      {isLoading &&
-        !weather && (
-          <View
-            style={
-              styles.stateContainer
-            }
-          >
-            <ActivityIndicator
-              size="large"
-              color={
-                colors.primary
-              }
-            />
+      {isLoading && !weather && (
+        <View style={styles.stateContainer}>
+          <ActivityIndicator size='large' color={colors.primary} />
 
-            <Text
-              style={
-                styles.stateText
-              }
-            >
-              Loading weather...
-            </Text>
-          </View>
-        )}
+          <Text style={styles.stateText}>Loading weather...</Text>
+        </View>
+      )}
 
       {/* INITIAL ERROR */}
 
-      {error &&
-        !weather && (
-          <View
-            style={
-              styles.stateContainer
-            }
+      {error && !weather && (
+        <View style={styles.stateContainer}>
+          <Text style={styles.errorTitle}>Weather unavailable</Text>
+
+          <Text style={styles.stateText}>{error}</Text>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.retryButton,
+
+              pressed && styles.retryButtonPressed,
+            ]}
+            onPress={onRefresh}
           >
-            <Text
-              style={
-                styles.errorTitle
-              }
-            >
-              Weather unavailable
-            </Text>
-
-            <Text
-              style={
-                styles.stateText
-              }
-            >
-              {error}
-            </Text>
-
-            <Pressable
-              style={({
-                pressed,
-              }) => [
-                styles.retryButton,
-
-                pressed &&
-                  styles.retryButtonPressed,
-              ]}
-              onPress={
-                onRefresh
-              }
-            >
-              <Text
-                style={
-                  styles.retryText
-                }
-              >
-                Try again
-              </Text>
-            </Pressable>
-          </View>
-        )}
+            <Text style={styles.retryText}>Try again</Text>
+          </Pressable>
+        </View>
+      )}
 
       {weather && (
         <>
           {/* CURRENT WEATHER */}
 
-          <View
-            style={
-              styles.currentWeather
-            }
-          >
+          <View style={styles.currentWeather}>
             <Text
               style={[
                 styles.temperature,
 
                 {
-                  fontSize:
-                    temperatureSize,
+                  fontSize: temperatureSize,
 
-                  lineHeight:
-                    temperatureSize *
-                    1.02,
+                  lineHeight: temperatureSize * 1.02,
                 },
               ]}
             >
-              {Math.round(
-                weather.current
-                  .temperature
-              )}
-              °
+              {Math.round(weather.current.temperature)}°
             </Text>
 
             {currentCondition && (
-              <View
-                style={
-                  styles.condition
-                }
-              >
+              <View style={styles.condition}>
                 <WeatherIcon
-                  name={
-                    currentCondition.icon
-                  }
+                  name={currentCondition.icon}
                   size={33}
-                  color={
-                    textColor
-                  }
-                  strokeWidth={
-                    1.8
-                  }
+                  color={textColor}
+                  strokeWidth={1.8}
                 />
 
-                <Text
-                  style={
-                    styles.conditionLabel
-                  }
-                >
-                  {
-                    currentCondition.label
-                  }
+                <Text style={styles.conditionLabel}>
+                  {currentCondition.label}
                 </Text>
               </View>
             )}
@@ -461,357 +260,134 @@ export function WeatherCard({
 
           {/* HOURLY FORECAST */}
 
-          <View
-            style={
-              styles.hourlyContainer
-            }
-          >
+          <View style={styles.hourlyContainer}>
             <ScrollView
               horizontal
               nestedScrollEnabled
-              showsHorizontalScrollIndicator={
-                false
-              }
-              contentContainerStyle={
-                styles.hourlyContent
-              }
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.hourlyContent}
             >
-              {weather.hourly.map(
-                (hour) => {
-                  const condition =
-                    getWeatherCondition(
-                      hour.weatherCode,
-                      hour.isDay
-                    );
+              {weather.hourly.map((hour) => {
+                const condition = getWeatherCondition(
+                  hour.weatherCode,
+                  hour.isDay,
+                );
 
-                  return (
-                    <View
-                      key={
-                        hour.time
-                      }
-                      style={
-                        styles.hourItem
-                      }
-                    >
-                      <Text
-                        style={
-                          styles.hourTime
-                        }
-                      >
-                        {formatHour(
-                          hour.time
-                        )}
-                      </Text>
+                return (
+                  <View key={hour.time} style={styles.hourItem}>
+                    <Text style={styles.hourTime}>{formatHour(hour.time)}</Text>
 
-                      <WeatherIcon
-                        name={
-                          condition.icon
-                        }
-                        size={24}
-                        color={
-                          textColor
-                        }
-                        strokeWidth={
-                          1.8
-                        }
-                      />
+                    <WeatherIcon
+                      name={condition.icon}
+                      size={24}
+                      color={textColor}
+                      strokeWidth={1.8}
+                    />
 
-                      <Text
-                        style={
-                          styles.hourTemperature
-                        }
-                      >
-                        {Math.round(
-                          hour.temperature
-                        )}
-                        °
-                      </Text>
+                    <Text style={styles.hourTemperature}>
+                      {Math.round(hour.temperature)}°
+                    </Text>
 
-                      <Text
-                        style={
-                          styles.hourRain
-                        }
-                      >
-                        {
-                          hour.precipitationProbability
-                        }
-                        %
-                      </Text>
-                    </View>
-                  );
-                }
-              )}
+                    <Text style={styles.hourRain}>
+                      {hour.precipitationProbability}%
+                    </Text>
+                  </View>
+                );
+              })}
             </ScrollView>
           </View>
 
           {/* CURRENT DETAILS */}
 
-          <Text
-            style={
-              styles.sectionTitle
-            }
-          >
-            Details
-          </Text>
+          <Text style={styles.sectionTitle}>Details</Text>
 
-          <View
-            style={
-              styles.detailsContainer
-            }
-          >
-            <View
-              style={
-                styles.detailItem
-              }
-            >
-              <Thermometer
-                size={19}
-                color={
-                  textColor
-                }
-                strokeWidth={
-                  1.9
-                }
-              />
+          <View style={styles.detailsContainer}>
+            <View style={styles.detailItem}>
+              <Thermometer size={19} color={textColor} strokeWidth={1.9} />
 
-              <Text
-                style={
-                  styles.detailLabel
-                }
-              >
-                Feels like
-              </Text>
+              <Text style={styles.detailLabel}>Feels like</Text>
 
-              <Text
-                style={
-                  styles.detailValue
-                }
-              >
-                {Math.round(
-                  weather.current
-                    .apparentTemperature
-                )}
-                °
+              <Text style={styles.detailValue}>
+                {Math.round(weather.current.apparentTemperature)}°
               </Text>
             </View>
 
-            <View
-              style={
-                styles.detailDivider
-              }
-            />
+            <View style={styles.detailDivider} />
 
-            <View
-              style={
-                styles.detailItem
-              }
-            >
-              <Droplets
-                size={19}
-                color={
-                  textColor
-                }
-                strokeWidth={
-                  1.9
-                }
-              />
+            <View style={styles.detailItem}>
+              <Droplets size={19} color={textColor} strokeWidth={1.9} />
 
-              <Text
-                style={
-                  styles.detailLabel
-                }
-              >
-                Humidity
-              </Text>
+              <Text style={styles.detailLabel}>Humidity</Text>
 
-              <Text
-                style={
-                  styles.detailValue
-                }
-              >
-                {
-                  weather.current
-                    .humidity
-                }
-                %
+              <Text style={styles.detailValue}>
+                {weather.current.humidity}%
               </Text>
             </View>
 
-            <View
-              style={
-                styles.detailDivider
-              }
-            />
+            <View style={styles.detailDivider} />
 
-            <View
-              style={
-                styles.detailItem
-              }
-            >
-              <Wind
-                size={19}
-                color={
-                  textColor
-                }
-                strokeWidth={
-                  1.9
-                }
-              />
+            <View style={styles.detailItem}>
+              <Wind size={19} color={textColor} strokeWidth={1.9} />
 
-              <Text
-                style={
-                  styles.detailLabel
-                }
-              >
-                Wind
-              </Text>
+              <Text style={styles.detailLabel}>Wind</Text>
 
-              <Text
-                numberOfLines={
-                  1
-                }
-                style={
-                  styles.detailValue
-                }
-              >
-                {Math.round(
-                  weather.current
-                    .windSpeed
-                )}{' '}
-                km/h
+              <Text numberOfLines={1} style={styles.detailValue}>
+                {Math.round(weather.current.windSpeed)} km/h
               </Text>
             </View>
           </View>
 
           {/* DAILY FORECAST */}
 
-          <Text
-            style={
-              styles.sectionTitle
-            }
-          >
-            7 Day Forecast
-          </Text>
+          <Text style={styles.sectionTitle}>7 Day Forecast</Text>
 
-          <View
-            style={
-              styles.dailyContainer
-            }
-          >
-            {weather.daily.map(
-              (
-                day,
-                index
-              ) => {
-                const condition =
-                  getWeatherCondition(
-                    day.weatherCode,
-                    true
-                  );
+          <View style={styles.dailyContainer}>
+            {weather.daily.map((day, index) => {
+              const condition = getWeatherCondition(day.weatherCode, true);
 
-                return (
-                  <View
-                    key={
-                      day.date
-                    }
-                  >
-                    <View
-                      style={
-                        styles.dailyRow
-                      }
-                    >
-                      {/* DAY */}
+              return (
+                <View key={day.date}>
+                  <View style={styles.dailyRow}>
+                    {/* DAY */}
 
-                      <Text
-                        style={
-                          styles.dailyDay
-                        }
-                      >
-                        {index ===
-                        0
-                          ? 'Today'
-                          : formatDay(
-                              day.date
-                            )}
+                    <Text style={styles.dailyDay}>
+                      {index === 0 ? "Today" : formatDay(day.date)}
+                    </Text>
+
+                    {/* CONDITION */}
+
+                    <View style={styles.dailyCondition}>
+                      <WeatherIcon
+                        name={condition.icon}
+                        size={23}
+                        color={textColor}
+                        strokeWidth={1.8}
+                      />
+
+                      <Text style={styles.dailyRain}>
+                        {day.precipitationProbability}%
                       </Text>
-
-                      {/* CONDITION */}
-
-                      <View
-                        style={
-                          styles.dailyCondition
-                        }
-                      >
-                        <WeatherIcon
-                          name={
-                            condition.icon
-                          }
-                          size={23}
-                          color={
-                            textColor
-                          }
-                          strokeWidth={
-                            1.8
-                          }
-                        />
-
-                        <Text
-                          style={
-                            styles.dailyRain
-                          }
-                        >
-                          {
-                            day.precipitationProbability
-                          }
-                          %
-                        </Text>
-                      </View>
-
-                      {/* TEMPERATURE */}
-
-                      <View
-                        style={
-                          styles.dailyTemperatures
-                        }
-                      >
-                        <Text
-                          style={
-                            styles.dailyMax
-                          }
-                        >
-                          {Math.round(
-                            day.temperatureMax
-                          )}
-                          °
-                        </Text>
-
-                        <Text
-                          style={
-                            styles.dailyMin
-                          }
-                        >
-                          {Math.round(
-                            day.temperatureMin
-                          )}
-                          °
-                        </Text>
-                      </View>
                     </View>
 
-                    {index !==
-                      weather.daily
-                        .length -
-                        1 && (
-                      <View
-                        style={
-                          styles.dailyDivider
-                        }
-                      />
-                    )}
+                    {/* TEMPERATURE */}
+
+                    <View style={styles.dailyTemperatures}>
+                      <Text style={styles.dailyMax}>
+                        {Math.round(day.temperatureMax)}°
+                      </Text>
+
+                      <Text style={styles.dailyMin}>
+                        {Math.round(day.temperatureMin)}°
+                      </Text>
+                    </View>
                   </View>
-                );
-              }
-            )}
+
+                  {index !== weather.daily.length - 1 && (
+                    <View style={styles.dailyDivider} />
+                  )}
+                </View>
+              );
+            })}
           </View>
         </>
       )}
@@ -819,89 +395,50 @@ export function WeatherCard({
   );
 }
 
-function formatLocation(
-  city: City
-) {
-  const parts: string[] =
-    [];
+function formatLocation(city: City) {
+  const parts: string[] = [];
 
-  if (
-    city.region &&
-    city.region !==
-      city.name
-  ) {
-    parts.push(
-      city.region
-    );
+  if (city.region && city.region !== city.name) {
+    parts.push(city.region);
   }
 
   if (city.country) {
-    parts.push(
-      city.country
-    );
+    parts.push(city.country);
   }
 
-  return parts.join(
-    ', '
-  );
+  return parts.join(", ");
 }
 
-function formatHour(
-  time: string
-) {
-  const hour =
-    Number(
-      time.slice(
-        11,
-        13
-      )
-    );
+function formatHour(time: string) {
+  const hour = Number(time.slice(11, 13));
 
-  const suffix =
-    hour >= 12
-      ? 'pm'
-      : 'am';
+  const suffix = hour >= 12 ? "pm" : "am";
 
-  const displayHour =
-    hour % 12 || 12;
+  const displayHour = hour % 12 || 12;
 
   return `${displayHour}${suffix}`;
 }
 
-function formatDay(
-  date: string
-) {
-  const parsedDate =
-    new Date(
-      `${date}T12:00:00`
-    );
+function formatDay(date: string) {
+  const parsedDate = new Date(`${date}T12:00:00`);
 
-  return parsedDate.toLocaleDateString(
-    'en-US',
-    {
-      weekday:
-        'short',
-    }
-  );
+  return parsedDate.toLocaleDateString("en-US", {
+    weekday: "short",
+  });
 }
 
-function createStyles(
-  colors: AppColors,
-  textColor: string
-) {
+function createStyles(colors: AppColors, textColor: string) {
   return StyleSheet.create({
     container: {
       flex: 1,
 
-      backgroundColor:
-        colors.background,
+      backgroundColor: colors.background,
     },
 
     content: {
       flexGrow: 1,
 
-      paddingHorizontal:
-        20,
+      paddingHorizontal: 20,
 
       paddingTop: 24,
 
@@ -915,14 +452,11 @@ function createStyles(
     header: {
       minHeight: 52,
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'space-between',
+      justifyContent: "space-between",
     },
 
     cityInfo: {
@@ -936,14 +470,11 @@ function createStyles(
 
       lineHeight: 27,
 
-      fontWeight:
-        '800',
+      fontWeight: "800",
 
-      letterSpacing:
-        -0.4,
+      letterSpacing: -0.4,
 
-      color:
-        textColor,
+      color: textColor,
     },
 
     cityLocation: {
@@ -953,21 +484,17 @@ function createStyles(
 
       lineHeight: 16,
 
-      fontWeight:
-        '500',
+      fontWeight: "500",
 
-      color:
-        textColor,
+      color: textColor,
 
       opacity: 0.58,
     },
 
     headerActions: {
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
       gap: 2,
     },
@@ -979,16 +506,13 @@ function createStyles(
 
       borderRadius: 21,
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
     },
 
     widgetButtonSelected: {
-      backgroundColor:
-        colors.surfaceSecondary,
+      backgroundColor: colors.surfaceSecondary,
     },
 
     headerButtonPressed: {
@@ -1010,26 +534,21 @@ function createStyles(
 
       flex: 1,
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
       gap: 12,
 
-      paddingHorizontal:
-        24,
+      paddingHorizontal: 24,
     },
 
     stateText: {
-      color:
-        textColor,
+      color: textColor,
 
       opacity: 0.65,
 
-      textAlign:
-        'center',
+      textAlign: "center",
 
       fontSize: 14,
 
@@ -1039,26 +558,21 @@ function createStyles(
     errorTitle: {
       fontSize: 19,
 
-      fontWeight:
-        '700',
+      fontWeight: "700",
 
-      color:
-        textColor,
+      color: textColor,
     },
 
     retryButton: {
       marginTop: 4,
 
-      paddingHorizontal:
-        18,
+      paddingHorizontal: 18,
 
-      paddingVertical:
-        10,
+      paddingVertical: 10,
 
       borderRadius: 20,
 
-      backgroundColor:
-        colors.primary,
+      backgroundColor: colors.primary,
     },
 
     retryButtonPressed: {
@@ -1066,13 +580,11 @@ function createStyles(
     },
 
     retryText: {
-      color:
-        colors.primaryText,
+      color: colors.primaryText,
 
       fontSize: 14,
 
-      fontWeight:
-        '700',
+      fontWeight: "700",
     },
 
     /*
@@ -1084,53 +596,41 @@ function createStyles(
 
       marginTop: 16,
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'space-between',
+      justifyContent: "space-between",
     },
 
     temperature: {
-      color:
-        textColor,
+      color: textColor,
 
-      fontWeight:
-        '800',
+      fontWeight: "800",
 
-      letterSpacing:
-        -5,
+      letterSpacing: -5,
     },
 
     condition: {
-      maxWidth: '45%',
+      maxWidth: "45%",
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'flex-end',
+      justifyContent: "flex-end",
 
       gap: 7,
     },
 
     conditionLabel: {
-      color:
-        textColor,
+      color: textColor,
 
       fontSize: 13,
 
-      fontWeight:
-        '600',
+      fontWeight: "600",
 
-      textAlign:
-        'right',
+      textAlign: "right",
     },
 
     /*
@@ -1139,25 +639,21 @@ function createStyles(
      */
 
     hourlyContainer: {
-      overflow:
-        'hidden',
+      overflow: "hidden",
 
       borderRadius: 22,
 
-      backgroundColor:
-        colors.surface,
+      backgroundColor: colors.surface,
 
       marginTop: 8,
     },
 
     hourlyContent: {
-      minWidth: '100%',
+      minWidth: "100%",
 
-      paddingHorizontal:
-        10,
+      paddingHorizontal: 10,
 
-      paddingVertical:
-        14,
+      paddingVertical: 14,
 
       gap: 2,
     },
@@ -1165,47 +661,39 @@ function createStyles(
     hourItem: {
       width: 62,
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
       gap: 6,
     },
 
     hourTime: {
-      color:
-        textColor,
+      color: textColor,
 
       opacity: 0.58,
 
       fontSize: 10,
 
-      fontWeight:
-        '600',
+      fontWeight: "600",
     },
 
     hourTemperature: {
-      color:
-        textColor,
+      color: textColor,
 
       fontSize: 15,
 
-      fontWeight:
-        '800',
+      fontWeight: "800",
     },
 
     hourRain: {
-      color:
-        textColor,
+      color: textColor,
 
       opacity: 0.5,
 
       fontSize: 9,
 
-      fontWeight:
-        '600',
+      fontWeight: "600",
     },
 
     /*
@@ -1217,15 +705,13 @@ function createStyles(
 
       marginBottom: 10,
 
-      color:
-        textColor,
+      color: textColor,
 
       fontSize: 15,
 
       lineHeight: 20,
 
-      fontWeight:
-        '700',
+      fontWeight: "700",
     },
 
     /*
@@ -1238,19 +724,15 @@ function createStyles(
     detailsContainer: {
       minHeight: 86,
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'stretch',
+      alignItems: "stretch",
 
       borderRadius: 22,
 
-      backgroundColor:
-        colors.surface,
+      backgroundColor: colors.surface,
 
-      paddingVertical:
-        13,
+      paddingVertical: 13,
     },
 
     detailItem: {
@@ -1258,53 +740,43 @@ function createStyles(
 
       minWidth: 0,
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'center',
+      justifyContent: "center",
 
       gap: 3,
 
-      paddingHorizontal:
-        5,
+      paddingHorizontal: 5,
     },
 
     detailDivider: {
       width: 1,
 
-      marginVertical:
-        5,
+      marginVertical: 5,
 
-      backgroundColor:
-        colors.border,
+      backgroundColor: colors.border,
     },
 
     detailLabel: {
       marginTop: 2,
 
-      color:
-        textColor,
+      color: textColor,
 
       opacity: 0.55,
 
       fontSize: 9,
 
-      fontWeight:
-        '600',
+      fontWeight: "600",
     },
 
     detailValue: {
-      color:
-        textColor,
+      color: textColor,
 
       fontSize: 13,
 
-      fontWeight:
-        '800',
+      fontWeight: "800",
 
-      textAlign:
-        'center',
+      textAlign: "center",
     },
 
     /*
@@ -1312,102 +784,91 @@ function createStyles(
      */
 
     dailyContainer: {
-      overflow:
-        'hidden',
+      overflow: "hidden",
 
       borderRadius: 22,
 
-      backgroundColor:
-        colors.surface,
+      backgroundColor: colors.surface,
     },
 
     dailyRow: {
       minHeight: 62,
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      paddingHorizontal:
-        15,
+      justifyContent: "space-between",
+
+      paddingHorizontal: 15,
     },
 
     dailyDay: {
-      flex: 1,
+      width: 72,
 
-      color:
-        textColor,
+      color: textColor,
 
       fontSize: 14,
 
-      fontWeight:
-        '700',
+      fontWeight: "700",
     },
 
     dailyCondition: {
       width: 78,
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
-
-      justifyContent:
-        'flex-start',
+      alignItems: "center",
 
       gap: 6,
     },
 
     dailyRain: {
-      color:
-        textColor,
+      color: textColor,
 
       opacity: 0.5,
 
       fontSize: 10,
 
-      fontWeight:
-        '600',
+      fontWeight: "600",
     },
 
     dailyTemperatures: {
-      width: 78,
+      width: 66,
 
-      flexDirection:
-        'row',
+      flexDirection: "row",
 
-      alignItems:
-        'center',
+      alignItems: "center",
 
-      justifyContent:
-        'flex-end',
+      justifyContent: "flex-start",
 
       gap: 10,
     },
 
     dailyMax: {
-      color:
-        textColor,
+      width: 28,
+
+      color: textColor,
 
       fontSize: 15,
 
-      fontWeight:
-        '800',
+      fontWeight: "800",
+
+      textAlign: "left",
     },
 
     dailyMin: {
-      color:
-        textColor,
+      width: 28,
+
+      color: textColor,
 
       opacity: 0.48,
 
       fontSize: 15,
 
-      fontWeight:
-        '600',
+      fontWeight: "600",
+
+      textAlign: "left",
     },
 
     dailyDivider: {
@@ -1417,8 +878,7 @@ function createStyles(
 
       marginRight: 15,
 
-      backgroundColor:
-        colors.border,
+      backgroundColor: colors.border,
     },
   });
 }

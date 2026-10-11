@@ -49,11 +49,11 @@ const lightColors: AppColors = {
 };
 
 const darkColors: AppColors = {
-  background: '#202124',
+  background: '#212121',
 
-  surface: '#2a2b2f',
+  surface: '#2f2f2f',
 
-  surfaceSecondary: '#2a2b2f',
+  surfaceSecondary: '#2c2c2e',
 
   text: '#E6EDF2',
 
