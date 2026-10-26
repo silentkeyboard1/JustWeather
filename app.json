@@ -105,7 +105,8 @@
             }
           ]
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true,
