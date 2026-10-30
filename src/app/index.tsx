@@ -20,6 +20,15 @@ import {
   View,
 } from 'react-native';
 
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+
+import {
+  MetaballPagination,
+} from '../shared/components/MetaballPagination';
+
 import {
   LocateFixed,
   RefreshCw,
@@ -116,6 +125,24 @@ export default function HomeScreen() {
     setActiveIndex,
   ] =
     useState(0);
+
+  /*
+   * Continuous horizontal scroll position.
+   *
+   * Unlike activeIndex, this contains values
+   * between pages and therefore lets the
+   * metaball follow the user's finger.
+   */
+  const scrollX =
+    useSharedValue(0);
+
+  const scrollHandler =
+    useAnimatedScrollHandler({
+      onScroll: (event) => {
+        scrollX.value =
+          event.contentOffset.x;
+      },
+    });
 
   const weatherCities =
     useMemo(() => {
@@ -454,7 +481,7 @@ export default function HomeScreen() {
       {/* WEATHER PAGES */}
 
       {hasPages && (
-        <FlatList
+        <Animated.FlatList
           ref={
             pagerRef
           }
@@ -482,6 +509,12 @@ export default function HomeScreen() {
           }
           windowSize={
             3
+          }
+          onScroll={
+            scrollHandler
+          }
+          scrollEventThrottle={
+            16
           }
           getItemLayout={(
             _,
@@ -547,7 +580,7 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* PAGINATION */}
+      {/* METABALL PAGINATION */}
 
       {weatherCities.length >
         1 && (
@@ -562,25 +595,23 @@ export default function HomeScreen() {
           ]}
           pointerEvents="none"
         >
-          {weatherCities.map(
-            (
-              city,
-              index
-            ) => (
-              <View
-                key={
-                  city.id
-                }
-                style={[
-                  styles.dot,
-
-                  index ===
-                    activeIndex &&
-                    styles.activeDot,
-                ]}
-              />
-            )
-          )}
+          <MetaballPagination
+            count={
+              weatherCities.length
+            }
+            pageWidth={
+              width
+            }
+            scrollX={
+              scrollX
+            }
+            activeColor={
+              colors.primary
+            }
+            inactiveColor={
+              colors.textMuted
+            }
+          />
         </View>
       )}
 
@@ -838,27 +869,7 @@ function createStyles(
       alignItems:
         'center',
 
-      gap: 7,
-
       zIndex: 50,
-    },
-
-    dot: {
-      width: 7,
-
-      height: 7,
-
-      borderRadius: 4,
-
-      backgroundColor:
-        colors.border,
-    },
-
-    activeDot: {
-      width: 18,
-
-      backgroundColor:
-        colors.primary,
     },
 
     searchFab: {
