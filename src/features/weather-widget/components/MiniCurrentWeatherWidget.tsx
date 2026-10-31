@@ -7,10 +7,6 @@ import {
 } from 'react-native-android-widget';
 
 import type {
-  ColorProp,
-} from 'react-native-android-widget';
-
-import type {
   City,
 } from '../../city-search/model/city';
 
@@ -27,17 +23,18 @@ import {
   getWidgetWeatherIconSvg,
 } from '../utils/getWidgetWeatherIconSvg';
 
+import {
+  getWidgetThemeColors,
+} from '../utils/widgetTheme';
+
 type WidgetTheme =
   | 'light'
   | 'dark';
 
 type MiniCurrentWeatherWidgetProps = {
   theme: WidgetTheme;
-
   city: City | null;
-
   weather: Weather | null;
-
   message?: string;
 };
 
@@ -47,23 +44,14 @@ export function MiniCurrentWeatherWidget({
   weather,
   message,
 }: MiniCurrentWeatherWidgetProps) {
-  const isDark =
-    theme === 'dark';
-
-  const backgroundColor: ColorProp =
-    isDark
-      ? '#222222'
-      : '#F1F3F4';
-
-  const textColor: ColorProp =
-    isDark
-      ? '#F1F3F4'
-      : '#222222';
-
-  const secondaryTextColor: ColorProp =
-    isDark
-      ? '#BDC1C6'
-      : '#5F6368';
+  const {
+    backgroundColor,
+    textColor,
+    secondaryTextColor,
+  } =
+    getWidgetThemeColors(
+      theme
+    );
 
   const currentCondition =
     weather
@@ -78,21 +66,31 @@ export function MiniCurrentWeatherWidget({
       clickAction="OPEN_APP"
       accessibilityLabel="Open JustWeather"
       style={{
-        width: 'match_parent',
-        height: 'match_parent',
+        width:
+          'match_parent',
 
-        paddingHorizontal: 10,
-        paddingVertical: 7,
+        height:
+          'match_parent',
 
-        borderRadius: 22,
+        paddingHorizontal:
+          10,
+
+        paddingVertical:
+          7,
+
+        borderRadius:
+          22,
 
         backgroundColor,
 
-        flexDirection: 'row',
+        flexDirection:
+          'row',
 
-        alignItems: 'center',
+        alignItems:
+          'center',
 
-        justifyContent: 'space-between',
+        justifyContent:
+          'space-between',
       }}
     >
       {/* CITY */}
@@ -105,13 +103,17 @@ export function MiniCurrentWeatherWidget({
           )
         }
         style={{
-          width: 48,
+          width:
+            48,
 
-          fontSize: 10,
+          fontSize:
+            10,
 
-          fontWeight: '700',
+          fontWeight:
+            '700',
 
-          color: textColor,
+          color:
+            textColor,
         }}
       />
 
@@ -121,28 +123,29 @@ export function MiniCurrentWeatherWidget({
       currentCondition ? (
         <FlexWidget
           style={{
-            flexDirection: 'row',
+            flexDirection:
+              'row',
 
-            alignItems: 'center',
+            alignItems:
+              'center',
           }}
         >
-          {/* TEMPERATURE */}
-
           <TextWidget
             text={`${Math.round(
               weather.current
                 .temperature
             )}°`}
             style={{
-              fontSize: 22,
+              fontSize:
+                22,
 
-              fontWeight: '800',
+              fontWeight:
+                '800',
 
-              color: textColor,
+              color:
+                textColor,
             }}
           />
-
-          {/* WEATHER ICON */}
 
           <SvgWidget
             svg={
@@ -152,17 +155,19 @@ export function MiniCurrentWeatherWidget({
               )
             }
             style={{
-              width: 22,
+              width:
+                22,
 
-              height: 22,
+              height:
+                22,
 
-              marginLeft: 6,
+              marginLeft:
+                6,
 
-              marginBottom: 2,
+              marginBottom:
+                2,
             }}
           />
-
-          {/* REFRESH */}
 
           <SvgWidget
             svg={
@@ -173,22 +178,28 @@ export function MiniCurrentWeatherWidget({
             clickAction="REFRESH_WEATHER"
             accessibilityLabel="Refresh weather"
             style={{
-              width: 18,
+              width:
+                18,
 
-              height: 18,
+              height:
+                18,
 
-              marginLeft: 6,
+              marginLeft:
+                6,
 
-              padding: 2,
+              padding:
+                2,
             }}
           />
         </FlexWidget>
       ) : (
         <FlexWidget
           style={{
-            flexDirection: 'row',
+            flexDirection:
+              'row',
 
-            alignItems: 'center',
+            alignItems:
+              'center',
           }}
         >
           <TextWidget
@@ -198,11 +209,14 @@ export function MiniCurrentWeatherWidget({
               )
             }
             style={{
-              width: 55,
+              width:
+                55,
 
-              fontSize: 8,
+              fontSize:
+                8,
 
-              fontWeight: '600',
+              fontWeight:
+                '600',
 
               color:
                 secondaryTextColor,
@@ -218,13 +232,17 @@ export function MiniCurrentWeatherWidget({
             clickAction="REFRESH_WEATHER"
             accessibilityLabel="Refresh weather"
             style={{
-              width: 18,
+              width:
+                18,
 
-              height: 18,
+              height:
+                18,
 
-              marginLeft: 5,
+              marginLeft:
+                5,
 
-              padding: 2,
+              padding:
+                2,
             }}
           />
         </FlexWidget>
@@ -236,7 +254,8 @@ export function MiniCurrentWeatherWidget({
 function shortenCityName(
   name: string
 ) {
-  const maxLength = 8;
+  const maxLength =
+    8;
 
   if (
     name.length <=

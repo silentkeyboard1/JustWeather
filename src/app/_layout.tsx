@@ -7,6 +7,10 @@ import {
 } from 'expo-status-bar';
 
 import {
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
+
+import {
   FavoritesProvider,
 } from '../features/favorites/context/FavoritesContext';
 
@@ -15,51 +19,49 @@ import {
 } from '../features/weather-widget/context/WidgetCityContext';
 
 import {
+  AppThemeProvider,
   useAppTheme,
 } from '../shared/theme/theme';
 
 export default function RootLayout() {
+  return (
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+      }}
+    >
+      <AppThemeProvider>
+        <FavoritesProvider>
+          <WidgetCityProvider>
+            <AppNavigation />
+          </WidgetCityProvider>
+        </FavoritesProvider>
+      </AppThemeProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+function AppNavigation() {
   const {
-    colors,
     isDark,
   } = useAppTheme();
 
   return (
-    <FavoritesProvider>
-      <WidgetCityProvider>
-        <>
-          <Stack
-            screenOptions={{
-              headerShown: false,
+    <>
+      <StatusBar
+        style={
+          isDark
+            ? 'light'
+            : 'dark'
+        }
+      />
 
-              contentStyle: {
-                backgroundColor:
-                  colors.background,
-              },
-            }}
-          >
-            <Stack.Screen
-              name="index"
-            />
-
-            <Stack.Screen
-              name="search"
-              options={{
-                animation:
-                  'slide_from_bottom',
-              }}
-            />
-          </Stack>
-
-          <StatusBar
-            style={
-              isDark
-                ? 'light'
-                : 'dark'
-            }
-          />
-        </>
-      </WidgetCityProvider>
-    </FavoritesProvider>
+      <Stack
+        screenOptions={{
+          headerShown:
+            false,
+        }}
+      />
+    </>
   );
 }

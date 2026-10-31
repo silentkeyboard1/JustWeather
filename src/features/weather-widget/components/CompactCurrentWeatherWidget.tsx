@@ -7,10 +7,6 @@ import {
 } from 'react-native-android-widget';
 
 import type {
-  ColorProp,
-} from 'react-native-android-widget';
-
-import type {
   City,
 } from '../../city-search/model/city';
 
@@ -27,17 +23,18 @@ import {
   getWidgetWeatherIconSvg,
 } from '../utils/getWidgetWeatherIconSvg';
 
+import {
+  getWidgetThemeColors,
+} from '../utils/widgetTheme';
+
 type WidgetTheme =
   | 'light'
   | 'dark';
 
 type CompactCurrentWeatherWidgetProps = {
   theme: WidgetTheme;
-
   city: City | null;
-
   weather: Weather | null;
-
   message?: string;
 };
 
@@ -47,26 +44,14 @@ export function CompactCurrentWeatherWidget({
   weather,
   message,
 }: CompactCurrentWeatherWidgetProps) {
-  const isDark =
-    theme === 'dark';
-
-  /*
-   * Same colors as the 2x4 widget.
-   */
-  const backgroundColor: ColorProp =
-    isDark
-      ? '#222222'
-      : '#F1F3F4';
-
-  const textColor: ColorProp =
-    isDark
-      ? '#F1F3F4'
-      : '#222222';
-
-  const secondaryTextColor: ColorProp =
-    isDark
-      ? '#BDC1C6'
-      : '#5F6368';
+  const {
+    backgroundColor,
+    textColor,
+    secondaryTextColor,
+  } =
+    getWidgetThemeColors(
+      theme
+    );
 
   const currentCondition =
     weather
@@ -76,17 +61,6 @@ export function CompactCurrentWeatherWidget({
         )
       : null;
 
-  /*
-   * 1x4 is intentionally much simpler.
-   *
-   * There is not enough vertical space
-   * for the hourly forecast pill.
-   *
-   * Layout:
-   *
-   * London        20°   cloud   refresh
-   * Overcast
-   */
   return (
     <FlexWidget
       clickAction="OPEN_APP"
@@ -191,8 +165,6 @@ export function CompactCurrentWeatherWidget({
               'center',
           }}
         >
-          {/* TEMPERATURE */}
-
           <TextWidget
             text={`${Math.round(
               weather.current
@@ -210,8 +182,6 @@ export function CompactCurrentWeatherWidget({
             }}
           />
 
-          {/* WEATHER ICON */}
-
           <SvgWidget
             svg={
               getWidgetWeatherIconSvg(
@@ -228,8 +198,6 @@ export function CompactCurrentWeatherWidget({
                 10,
             }}
           />
-
-          {/* REFRESH */}
 
           <SvgWidget
             svg={
@@ -312,9 +280,11 @@ function shortenMessage(
   }
 
   if (
-    message.includes(
-      'location'
-    )
+    message
+      .toLowerCase()
+      .includes(
+        'location'
+      )
   ) {
     return 'Location unavailable';
   }

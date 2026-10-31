@@ -15,35 +15,22 @@ import type {
 } from '../weather/model/weather';
 
 import {
-  CompactCurrentWeatherWidget,
-} from './components/CompactCurrentWeatherWidget';
+  getStoredAccentColor,
+} from '../../shared/theme/themeStorage';
 
 import {
-  CurrentWeatherWidget,
-} from './components/CurrentWeatherWidget';
-
-import {
-  MiniCurrentWeatherWidget,
-} from './components/MiniCurrentWeatherWidget';
-
-import {
-  SquareCurrentWeatherWidget,
-} from './components/SquareCurrentWeatherWidget';
-
-import {
-  VerticalCurrentWeatherWidget,
-} from './components/VerticalCurrentWeatherWidget';
+  createWeatherWidgetRepresentation,
+  getWidgetSize,
+  type WidgetSize,
+} from './renderWeatherWidget';
 
 import {
   resolveWidgetCity,
 } from './utils/resolveWidgetCity';
 
-type WidgetSize =
-  | 'large'
-  | 'compact'
-  | 'vertical'
-  | 'square'
-  | 'mini';
+import {
+  setWidgetAccentColor,
+} from './utils/widgetTheme';
 
 export async function widgetTaskHandler(
   props: WidgetTaskHandlerProps
@@ -57,14 +44,15 @@ export async function widgetTaskHandler(
     return;
   }
 
+  /*
+   * Load the exact same accent setting
+   * that the normal application uses.
+   */
+  await loadWidgetTheme();
+
   switch (
     props.widgetAction
   ) {
-    /*
-     * A completely new widget needs
-     * something rendered even if the first
-     * request fails.
-     */
     case 'WIDGET_ADDED': {
       await renderLiveWeather(
         props,
@@ -75,28 +63,7 @@ export async function widgetTaskHandler(
       break;
     }
 
-    /*
-     * Periodic refresh.
-     *
-     * If this fails, keep whatever weather
-     * is already visible on the widget.
-     */
-    case 'WIDGET_UPDATE': {
-      await renderLiveWeather(
-        props,
-        widgetSize,
-        false
-      );
-
-      break;
-    }
-
-    /*
-     * Same principle when resizing:
-     * don't replace valid weather with an
-     * error because GPS/network happened
-     * to fail at that exact moment.
-     */
+    case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED': {
       await renderLiveWeather(
         props,
@@ -107,12 +74,6 @@ export async function widgetTaskHandler(
       break;
     }
 
-    /*
-     * Manual refresh.
-     *
-     * A failed refresh also keeps the old
-     * weather instead of showing an error.
-     */
     case 'WIDGET_CLICK': {
       if (
         props.clickAction ===
@@ -138,57 +99,31 @@ export async function widgetTaskHandler(
   }
 }
 
-function getWidgetSize(
-  widgetName: string
-): WidgetSize | null {
-  if (
-    widgetName ===
-    'CurrentWeather'
-  ) {
-    return 'large';
-  }
+async function loadWidgetTheme() {
+  try {
+    const accentColor =
+      await getStoredAccentColor();
 
-  if (
-    widgetName ===
-    'CurrentWeatherCompact'
-  ) {
-    return 'compact';
-  }
+    setWidgetAccentColor(
+      accentColor
+    );
+  } catch (error) {
+    console.warn(
+      'Failed to load widget theme:',
+      error
+    );
 
-  if (
-    widgetName ===
-    'CurrentWeatherVertical'
-  ) {
-    return 'vertical';
+    setWidgetAccentColor(
+      null
+    );
   }
-
-  if (
-    widgetName ===
-    'CurrentWeatherSquare'
-  ) {
-    return 'square';
-  }
-
-  if (
-    widgetName ===
-    'CurrentWeatherMini'
-  ) {
-    return 'mini';
-  }
-
-  return null;
 }
 
 async function renderLiveWeather(
   props: WidgetTaskHandlerProps,
   widgetSize: WidgetSize,
-  showErrorIfNothingRendered: boolean
+  showErrorIfEmpty: boolean
 ) {
-  /*
-   * -----------------------------------
-   * 1. RESOLVE LOCATION
-   * -----------------------------------
-   */
   let city:
     | City
     | null;
@@ -202,25 +137,12 @@ async function renderLiveWeather(
       error
     );
 
-    /*
-     * Existing widget:
-     * leave old data untouched.
-     */
     if (
-      !showErrorIfNothingRendered
+      !showErrorIfEmpty
     ) {
-      console.log(
-        'Widget: keeping previous weather because location refresh failed.'
-      );
-
       return;
     }
 
-    /*
-     * Newly-added widget:
-     * there is no old data yet, so show
-     * a useful message.
-     */
     renderMessage(
       props,
       widgetSize,
@@ -233,12 +155,8 @@ async function renderLiveWeather(
 
   if (!city) {
     if (
-      !showErrorIfNothingRendered
+      !showErrorIfEmpty
     ) {
-      console.log(
-        'Widget: no location available, keeping previous weather.'
-      );
-
       return;
     }
 
@@ -252,11 +170,6 @@ async function renderLiveWeather(
     return;
   }
 
-  /*
-   * -----------------------------------
-   * 2. FETCH WEATHER
-   * -----------------------------------
-   */
   let weather:
     Weather;
 
@@ -272,27 +185,15 @@ async function renderLiveWeather(
     );
 
     /*
-     * This is the key behavior:
-     *
-     * If weather was already shown, don't
-     * overwrite it just because Internet
-     * is temporarily unavailable.
+     * Keep existing weather if this was
+     * merely a refresh failure.
      */
     if (
-      !showErrorIfNothingRendered
+      !showErrorIfEmpty
     ) {
-      console.log(
-        'Widget: keeping previous weather because the weather refresh failed.'
-      );
-
       return;
     }
 
-    /*
-     * Only a brand-new widget gets an
-     * error state, because it has nothing
-     * useful to preserve yet.
-     */
     renderMessage(
       props,
       widgetSize,
@@ -303,169 +204,13 @@ async function renderLiveWeather(
     return;
   }
 
-  /*
-   * -----------------------------------
-   * 3. SUCCESS
-   * -----------------------------------
-   */
-  try {
-    renderWeather(
-      props,
+  props.renderWidget(
+    createWeatherWidgetRepresentation(
       widgetSize,
       city,
       weather
-    );
-  } catch (error) {
-    console.error(
-      'Widget render failed:',
-      error
-    );
-
-    /*
-     * Again, do not destroy an existing
-     * good widget because one render failed.
-     */
-    if (
-      !showErrorIfNothingRendered
-    ) {
-      return;
-    }
-
-    renderMessage(
-      props,
-      widgetSize,
-      city,
-      'Widget unavailable.'
-    );
-  }
-}
-
-function renderWeather(
-  props: WidgetTaskHandlerProps,
-  widgetSize: WidgetSize,
-  city: City,
-  weather: Weather
-) {
-  if (
-    widgetSize ===
-    'compact'
-  ) {
-    props.renderWidget({
-      light: (
-        <CompactCurrentWeatherWidget
-          theme="light"
-          city={city}
-          weather={weather}
-        />
-      ),
-
-      dark: (
-        <CompactCurrentWeatherWidget
-          theme="dark"
-          city={city}
-          weather={weather}
-        />
-      ),
-    });
-
-    return;
-  }
-
-  if (
-    widgetSize ===
-    'vertical'
-  ) {
-    props.renderWidget({
-      light: (
-        <VerticalCurrentWeatherWidget
-          theme="light"
-          city={city}
-          weather={weather}
-        />
-      ),
-
-      dark: (
-        <VerticalCurrentWeatherWidget
-          theme="dark"
-          city={city}
-          weather={weather}
-        />
-      ),
-    });
-
-    return;
-  }
-
-  if (
-    widgetSize ===
-    'square'
-  ) {
-    props.renderWidget({
-      light: (
-        <SquareCurrentWeatherWidget
-          theme="light"
-          city={city}
-          weather={weather}
-        />
-      ),
-
-      dark: (
-        <SquareCurrentWeatherWidget
-          theme="dark"
-          city={city}
-          weather={weather}
-        />
-      ),
-    });
-
-    return;
-  }
-
-  if (
-    widgetSize ===
-    'mini'
-  ) {
-    props.renderWidget({
-      light: (
-        <MiniCurrentWeatherWidget
-          theme="light"
-          city={city}
-          weather={weather}
-        />
-      ),
-
-      dark: (
-        <MiniCurrentWeatherWidget
-          theme="dark"
-          city={city}
-          weather={weather}
-        />
-      ),
-    });
-
-    return;
-  }
-
-  /*
-   * Default 4x2 widget.
-   */
-  props.renderWidget({
-    light: (
-      <CurrentWeatherWidget
-        theme="light"
-        city={city}
-        weather={weather}
-      />
-    ),
-
-    dark: (
-      <CurrentWeatherWidget
-        theme="dark"
-        city={city}
-        weather={weather}
-      />
-    ),
-  });
+    )
+  );
 }
 
 function renderMessage(
@@ -475,133 +220,14 @@ function renderMessage(
   message: string
 ) {
   try {
-    if (
-      widgetSize ===
-      'compact'
-    ) {
-      props.renderWidget({
-        light: (
-          <CompactCurrentWeatherWidget
-            theme="light"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-
-        dark: (
-          <CompactCurrentWeatherWidget
-            theme="dark"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-      });
-
-      return;
-    }
-
-    if (
-      widgetSize ===
-      'vertical'
-    ) {
-      props.renderWidget({
-        light: (
-          <VerticalCurrentWeatherWidget
-            theme="light"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-
-        dark: (
-          <VerticalCurrentWeatherWidget
-            theme="dark"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-      });
-
-      return;
-    }
-
-    if (
-      widgetSize ===
-      'square'
-    ) {
-      props.renderWidget({
-        light: (
-          <SquareCurrentWeatherWidget
-            theme="light"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-
-        dark: (
-          <SquareCurrentWeatherWidget
-            theme="dark"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-      });
-
-      return;
-    }
-
-    if (
-      widgetSize ===
-      'mini'
-    ) {
-      props.renderWidget({
-        light: (
-          <MiniCurrentWeatherWidget
-            theme="light"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-
-        dark: (
-          <MiniCurrentWeatherWidget
-            theme="dark"
-            city={city}
-            weather={null}
-            message={message}
-          />
-        ),
-      });
-
-      return;
-    }
-
-    props.renderWidget({
-      light: (
-        <CurrentWeatherWidget
-          theme="light"
-          city={city}
-          weather={null}
-          message={message}
-        />
-      ),
-
-      dark: (
-        <CurrentWeatherWidget
-          theme="dark"
-          city={city}
-          weather={null}
-          message={message}
-        />
-      ),
-    });
+    props.renderWidget(
+      createWeatherWidgetRepresentation(
+        widgetSize,
+        city,
+        null,
+        message
+      )
+    );
   } catch (error) {
     console.error(
       'Widget error state could not be rendered:',

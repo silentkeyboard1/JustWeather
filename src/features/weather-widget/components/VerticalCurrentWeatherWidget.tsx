@@ -31,17 +31,18 @@ import {
   getWidgetWeatherIconSvg,
 } from '../utils/getWidgetWeatherIconSvg';
 
+import {
+  getWidgetThemeColors,
+} from '../utils/widgetTheme';
+
 type WidgetTheme =
   | 'light'
   | 'dark';
 
 type VerticalCurrentWeatherWidgetProps = {
   theme: WidgetTheme;
-
   city: City | null;
-
   weather: Weather | null;
-
   message?: string;
 };
 
@@ -51,28 +52,15 @@ export function VerticalCurrentWeatherWidget({
   weather,
   message,
 }: VerticalCurrentWeatherWidgetProps) {
-  const isDark =
-    theme === 'dark';
-
-  const backgroundColor: ColorProp =
-    isDark
-      ? '#222222'
-      : '#F1F3F4';
-
-  const textColor: ColorProp =
-    isDark
-      ? '#F1F3F4'
-      : '#222222';
-
-  const secondaryTextColor: ColorProp =
-    isDark
-      ? '#BDC1C6'
-      : '#5F6368';
-
-  const hourlyBackgroundColor: ColorProp =
-    isDark
-      ? '#303030'
-      : '#E3E5E8';
+  const {
+    backgroundColor,
+    textColor,
+    secondaryTextColor,
+    hourlyBackgroundColor,
+  } =
+    getWidgetThemeColors(
+      theme
+    );
 
   const currentCondition =
     weather
@@ -99,7 +87,8 @@ export function VerticalCurrentWeatherWidget({
         height:
           'match_parent',
 
-        padding: 14,
+        padding:
+          14,
 
         borderRadius:
           22,
@@ -158,11 +147,14 @@ export function VerticalCurrentWeatherWidget({
           clickAction="REFRESH_WEATHER"
           accessibilityLabel="Refresh weather"
           style={{
-            width: 22,
+            width:
+              22,
 
-            height: 22,
+            height:
+              22,
 
-            padding: 3,
+            padding:
+              3,
           }}
         />
       </FlexWidget>
@@ -299,9 +291,11 @@ export function VerticalCurrentWeatherWidget({
                   )
                 }
                 style={{
-                  width: 42,
+                  width:
+                    42,
 
-                  height: 42,
+                  height:
+                    42,
 
                   marginRight:
                     2,
@@ -374,7 +368,8 @@ export function VerticalCurrentWeatherWidget({
                       secondaryTextColor
                     }
                     addSpacing={
-                      index > 0
+                      index >
+                      0
                     }
                   />
                 );
@@ -389,15 +384,10 @@ export function VerticalCurrentWeatherWidget({
 
 type VerticalHourForecastProps = {
   time: string;
-
   temperature: number;
-
   icon: WeatherIconName;
-
   textColor: ColorProp;
-
   secondaryTextColor: ColorProp;
-
   addSpacing: boolean;
 };
 
@@ -435,7 +425,8 @@ function VerticalHourForecast({
           time
         }
         style={{
-          width: 34,
+          width:
+            34,
 
           fontSize:
             9,
@@ -456,16 +447,19 @@ function VerticalHourForecast({
           )
         }
         style={{
-          width: 18,
+          width:
+            18,
 
-          height: 18,
+          height:
+            18,
         }}
       />
 
       <TextWidget
         text={`${temperature}°`}
         style={{
-          width: 32,
+          width:
+            32,
 
           fontSize:
             12,
@@ -520,7 +514,8 @@ function formatHour(
       : 'am';
 
   const displayHour =
-    hour % 12 || 12;
+    hour % 12 ||
+    12;
 
   return `${displayHour}${suffix}`;
 }

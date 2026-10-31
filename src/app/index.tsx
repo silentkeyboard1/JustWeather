@@ -33,6 +33,7 @@ import {
   LocateFixed,
   RefreshCw,
   Search,
+  Settings,
   X,
 } from 'lucide-react-native';
 
@@ -649,6 +650,41 @@ export default function HomeScreen() {
           }
         />
       </Pressable>
+
+      {/* SETTINGS BUTTON */}
+
+      <Pressable
+        style={({
+          pressed,
+        }) => [
+          styles.settingsFab,
+          {
+            bottom:
+              insets.bottom +
+              18,
+          },
+
+          pressed &&
+            styles.settingsFabPressed,
+        ]}
+        onPress={() =>
+          router.push(
+            '/settings'
+          )
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Open settings"
+      >
+        <Settings
+          size={27}
+          strokeWidth={
+            2.2
+          }
+          color={
+            colors.primaryText
+          }
+        />
+      </Pressable>
     </View>
   );
 }
@@ -902,6 +938,45 @@ function createStyles(
     },
 
     searchFabPressed: {
+      opacity: 0.82,
+
+      transform: [
+        {
+          scale: 0.94,
+        },
+      ],
+    },
+
+    settingsFab: {
+      position:
+        'absolute',
+
+      right: 20,
+
+      width: 60,
+
+      height: 60,
+
+      borderRadius: 30,
+
+      alignItems:
+        'center',
+
+      justifyContent:
+        'center',
+
+      backgroundColor:
+        colors.primary,
+
+      borderWidth: 1,
+
+      borderColor:
+        colors.border,
+
+      zIndex: 100,
+    },
+
+    settingsFabPressed: {
       opacity: 0.82,
 
       transform: [

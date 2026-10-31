@@ -7,10 +7,6 @@ import {
 } from 'react-native-android-widget';
 
 import type {
-  ColorProp,
-} from 'react-native-android-widget';
-
-import type {
   City,
 } from '../../city-search/model/city';
 
@@ -27,17 +23,18 @@ import {
   getWidgetWeatherIconSvg,
 } from '../utils/getWidgetWeatherIconSvg';
 
+import {
+  getWidgetThemeColors,
+} from '../utils/widgetTheme';
+
 type WidgetTheme =
   | 'light'
   | 'dark';
 
 type SquareCurrentWeatherWidgetProps = {
   theme: WidgetTheme;
-
   city: City | null;
-
   weather: Weather | null;
-
   message?: string;
 };
 
@@ -47,27 +44,14 @@ export function SquareCurrentWeatherWidget({
   weather,
   message,
 }: SquareCurrentWeatherWidgetProps) {
-  const isDark =
-    theme === 'dark';
-
-  /*
-   * Same colors as the other
-   * JustWeather widgets.
-   */
-  const backgroundColor: ColorProp =
-    isDark
-      ? '#222222'
-      : '#F1F3F4';
-
-  const textColor: ColorProp =
-    isDark
-      ? '#F1F3F4'
-      : '#222222';
-
-  const secondaryTextColor: ColorProp =
-    isDark
-      ? '#BDC1C6'
-      : '#5F6368';
+  const {
+    backgroundColor,
+    textColor,
+    secondaryTextColor,
+  } =
+    getWidgetThemeColors(
+      theme
+    );
 
   const currentCondition =
     weather
@@ -88,9 +72,11 @@ export function SquareCurrentWeatherWidget({
         height:
           'match_parent',
 
-        padding: 12,
+        padding:
+          12,
 
-        borderRadius: 22,
+        borderRadius:
+          22,
 
         backgroundColor,
 
@@ -126,7 +112,8 @@ export function SquareCurrentWeatherWidget({
             )
           }
           style={{
-            fontSize: 13,
+            fontSize:
+              13,
 
             fontWeight:
               '700',
@@ -145,11 +132,14 @@ export function SquareCurrentWeatherWidget({
           clickAction="REFRESH_WEATHER"
           accessibilityLabel="Refresh weather"
           style={{
-            width: 20,
+            width:
+              20,
 
-            height: 20,
+            height:
+              20,
 
-            padding: 3,
+            padding:
+              3,
           }}
         />
       </FlexWidget>
@@ -182,7 +172,8 @@ export function SquareCurrentWeatherWidget({
               )
             }
             style={{
-              fontSize: 10,
+              fontSize:
+                10,
 
               fontWeight:
                 '600',
@@ -204,7 +195,8 @@ export function SquareCurrentWeatherWidget({
             flexDirection:
               'column',
 
-            marginTop: 5,
+            marginTop:
+              5,
           }}
         >
           {/* TEMPERATURE + ICON */}
@@ -230,7 +222,8 @@ export function SquareCurrentWeatherWidget({
                   .temperature
               )}°`}
               style={{
-                fontSize: 34,
+                fontSize:
+                  34,
 
                 fontWeight:
                   '800',
@@ -249,9 +242,14 @@ export function SquareCurrentWeatherWidget({
                   )
                 }
                 style={{
-                  width: 36,
-                  height: 36,
-                  marginTop: 1,
+                  width:
+                    36,
+
+                  height:
+                    36,
+
+                  marginTop:
+                    1,
                 }}
               />
             ) : (
@@ -267,9 +265,11 @@ export function SquareCurrentWeatherWidget({
                 currentCondition.label
               }
               style={{
-                marginTop: 1,
+                marginTop:
+                  1,
 
-                fontSize: 10,
+                fontSize:
+                  10,
 
                 fontWeight:
                   '600',
