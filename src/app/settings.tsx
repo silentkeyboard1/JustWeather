@@ -290,7 +290,7 @@ async function handleReset() {
               styles.description
             }
           >
-            Choose a base color. JustWeather automatically creates softer light and dark theme colors from it.
+            Choose a base color. The app theme will use it as tint for the app theme.
           </Text>
 
           {/* COLOR PICKER */}
@@ -390,28 +390,7 @@ async function handleReset() {
               accessibilityLabel="HEX theme color"
             />
 
-            <Pressable
-              style={({
-                pressed,
-              }) => [
-                styles.applyButton,
-
-                pressed &&
-                  styles.buttonPressed,
-              ]}
-              onPress={
-                handleApplyHex
-              }
-              accessibilityRole="button"
-            >
-              <Text
-                style={
-                  styles.applyButtonText
-                }
-              >
-                Apply
-              </Text>
-            </Pressable>
+            
           </View>
 
           {inputError && (
