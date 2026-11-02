@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/icon/JW_Icon.png" alt="JustWeather Icon" width="200">
-</p>
+![PREVIEW](./assets/images/JW_preview.jpg)
 
 # ☀️❄️☁️ JustWeather is a minimalistic Android app to enjoy your local weather data without distractions ☁️❄️☀️  
 
