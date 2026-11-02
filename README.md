@@ -11,3 +11,6 @@
 
 ## ‼️ If you want the widget to also update your current location, you need to tap on the widget icon on the home screen. Access to your location is mandatory for this function.  
 - The widget updates every full hour. If the update should include your new current location when you moved, background access of your location is needed.
+
+## 🎨 Customize the color of your theme and widgets in the settings using the colorpicker or a hexcode.  
+- The theme colors are calculated on the given input. Oversaturated colors are filtered automatically.
