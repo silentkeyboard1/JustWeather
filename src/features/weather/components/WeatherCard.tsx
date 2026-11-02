@@ -158,8 +158,8 @@ export function WeatherCard({
               <Star
                 size={27}
                 strokeWidth={2}
-                color={isFavorite ? colors.favorite : textColor}
-                fill={isFavorite ? colors.favorite : "transparent"}
+                color={isFavorite ? colors.primary : textColor}
+                fill={isFavorite ? colors.primary : "transparent"}
               />
             </Pressable>
           )}
