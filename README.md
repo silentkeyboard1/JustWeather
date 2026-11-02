@@ -3,7 +3,7 @@
 # ☀️❄️☁️ JustWeather is a minimalistic Android app to enjoy your local weather data without distractions ☁️❄️☀️  
 
 ## 📍⭐️ You can see the weather at you current location, search for cities and also add them to your favorites. You can swipe between your location and your favorites on the home screen.  
-- The data is provided by the Open-Meteo API.
+- The data is provided by the Open-Meteo API. Open-Meteo has over 30 weather models and automatically picks the best for your location to achieve the best possible accuracy for the forecast.
 
 ## 🪟 Use a widget to stay up to date on your homescreen. The widget refreshes one time every hour, so you can stay up to date. Alternatively you can use the refresh button to get real time data.  
 - The widgets are designed to fit into a minimalistic setup
