@@ -73,7 +73,6 @@ export function createThemeColors(
 ): AppColors {
   /*
    * No custom color:
-   *
    * return the exact original JustWeather
    * theme instead of generating a tint.
    */
