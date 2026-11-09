@@ -87,14 +87,6 @@ export function CurrentWeatherWidget({
         height:
           'match_parent',
 
-        /*
-         * Keep the horizontal spacing,
-         * but reduce vertical padding.
-         *
-         * This gives us more safety room
-         * on launchers that provide a
-         * slightly shorter 4x2 widget.
-         */
         paddingHorizontal:
           16,
 
@@ -238,12 +230,6 @@ export function CurrentWeatherWidget({
               justifyContent:
                 'space-between',
 
-              /*
-               * Reduced from:
-               *
-               * marginTop: 8
-               * marginBottom: 10
-               */
               marginTop:
                 4,
 
@@ -341,9 +327,6 @@ export function CurrentWeatherWidget({
               justifyContent:
                 'space-between',
 
-              /*
-               * Reduced from 8.
-               */
               marginTop:
                 4,
 
@@ -356,9 +339,6 @@ export function CurrentWeatherWidget({
               paddingHorizontal:
                 12,
 
-              /*
-               * Reduced from 8.
-               */
               paddingVertical:
                 6,
             }}
@@ -465,10 +445,6 @@ function HourForecast({
           height:
             19,
 
-          /*
-           * Slightly less vertical
-           * spacing inside every hour.
-           */
           marginTop:
             3,
 
