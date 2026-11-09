@@ -87,8 +87,19 @@ export function CurrentWeatherWidget({
         height:
           'match_parent',
 
-        padding:
+        /*
+         * Keep the horizontal spacing,
+         * but reduce vertical padding.
+         *
+         * This gives us more safety room
+         * on launchers that provide a
+         * slightly shorter 4x2 widget.
+         */
+        paddingHorizontal:
           16,
+
+        paddingVertical:
+          12,
 
         borderRadius:
           22,
@@ -145,11 +156,14 @@ export function CurrentWeatherWidget({
           clickAction="REFRESH_WEATHER"
           accessibilityLabel="Refresh weather"
           style={{
-            width: 24,
+            width:
+              24,
 
-            height: 24,
+            height:
+              24,
 
-            padding: 4,
+            padding:
+              4,
           }}
         />
       </FlexWidget>
@@ -224,13 +238,21 @@ export function CurrentWeatherWidget({
               justifyContent:
                 'space-between',
 
+              /*
+               * Reduced from:
+               *
+               * marginTop: 8
+               * marginBottom: 10
+               */
               marginTop:
-                8,
+                4,
 
               marginBottom:
-                10,
+                6,
             }}
           >
+            {/* CURRENT TEMPERATURE */}
+
             <TextWidget
               text={`${Math.round(
                 weather.current
@@ -247,6 +269,8 @@ export function CurrentWeatherWidget({
                   textColor,
               }}
             />
+
+            {/* CURRENT CONDITION */}
 
             {currentCondition ? (
               <FlexWidget
@@ -317,8 +341,11 @@ export function CurrentWeatherWidget({
               justifyContent:
                 'space-between',
 
+              /*
+               * Reduced from 8.
+               */
               marginTop:
-                8,
+                4,
 
               backgroundColor:
                 hourlyBackgroundColor,
@@ -329,8 +356,11 @@ export function CurrentWeatherWidget({
               paddingHorizontal:
                 12,
 
+              /*
+               * Reduced from 8.
+               */
               paddingVertical:
-                8,
+                6,
             }}
           >
             {nextHours.map(
@@ -401,6 +431,8 @@ function HourForecast({
           'center',
       }}
     >
+      {/* TIME */}
+
       <TextWidget
         text={
           time
@@ -417,6 +449,8 @@ function HourForecast({
         }}
       />
 
+      {/* WEATHER ICON */}
+
       <SvgWidget
         svg={
           getWidgetWeatherIconSvg(
@@ -431,13 +465,19 @@ function HourForecast({
           height:
             19,
 
+          /*
+           * Slightly less vertical
+           * spacing inside every hour.
+           */
           marginTop:
-            4,
+            3,
 
           marginBottom:
-            3,
+            2,
         }}
       />
+
+      {/* TEMPERATURE */}
 
       <TextWidget
         text={`${temperature}°`}
