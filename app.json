@@ -38,7 +38,11 @@
           "backgroundColor": "#F2F2F2",
           "image": "./assets/icon/JW_Splash.png",
           "imageWidth": 160,
-          "resizeMode": "contain"
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#212121",
+            "image": "./assets/icon/JW_Splash_Dark.png"
+          }
         }
       ],
       [
